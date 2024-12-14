@@ -24,9 +24,6 @@ export class TreeWindow extends basewindow.BaseWindow
 
 
     def _SpecificFilter(key: string): bool
-        if key == 'l'
-            this._CallbackSwitchFocus()
-        endif
         return true
     enddef
 

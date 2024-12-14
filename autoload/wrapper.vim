@@ -26,14 +26,14 @@ export class PoplarWrapper
                 cursorline: true
             })
             this._pin_win.GetId()->popup_setoptions({
-                zindex: Z_WIN_NOFOCUS,
+                zindex: CONSTANTS.Z_WIN_NOFOCUS,
                 cursorline: false
             })
         endif
     enddef
 
 
-    def SwitchFocus()
+    def SwitchFocus(): bool
         var opts1 = this._tree_win.GetId()->popup_getoptions()
         var opts2 = this._pin_win.GetId()->popup_getoptions()
         this._tree_win.GetId()->popup_setoptions({
@@ -44,6 +44,7 @@ export class PoplarWrapper
             zindex: opts1.zindex,
             cursorline: !opts2.cursorline
         })
+        return true
     enddef
 
 

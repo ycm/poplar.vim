@@ -24,9 +24,6 @@ export class PinWindow extends basewindow.BaseWindow
 
 
     def _SpecificFilter(key: string): bool
-        if key == 'h'
-            this._CallbackSwitchFocus()
-        endif
         return true
     enddef
 

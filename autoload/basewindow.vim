@@ -8,13 +8,14 @@ export class BaseWindow
     var _id = -1
     var _lines: list<any>
     var _on_left: bool
-    var _CallbackSwitchFocus: func(): void
+    var _CallbackSwitchFocus: func(): bool
     var _CallbackExit: func(): bool
     var savestate: dict<any> = null_dict
 
     def _GetCommonPopupProps(): dict<any>
         var true_height = [&lines - 6, CONSTANTS.MAX_HEIGHT]->min()
         var props = {
+            pos: 'topleft',
             col: &columns / 2 + 1,
             line: (&lines - true_height) / 2 - 1,
             firstline: this.savestate->get('firstline', 1),
@@ -26,7 +27,6 @@ export class BaseWindow
             borderchars: ['─', '│', '─', '│', '╭', '╮', '╯', '╰'],
             padding: [0, 1, 0, 1],
             highlight: 'Constant',
-            pos: 'topleft',
         }
         if this._on_left
             --props.col
@@ -42,16 +42,19 @@ export class BaseWindow
 
         if key_norm ==? '<esc>'
             return this._CallbackExit()
-        elseif key_norm ==? 'j'
+        elseif key_norm == 'j'
             if this._id->getcurpos()[1] >= this._lines->len()
                 return true
             endif
             return this._id->popup_filter_menu(key)
-        elseif key_norm ==? 'k'
+        elseif key_norm == 'k'
             if this._id->getcurpos()[1] <= 1
                 return true
             endif
             return this._id->popup_filter_menu(key)
+        elseif (key_norm == 'h' && !this._on_left)
+            || (key_norm == 'l' && this._on_left)
+            return this._CallbackSwitchFocus()
         endif
 
         return this._SpecificFilter(key_norm)

@@ -7,9 +7,9 @@ import './constants.vim' as CONSTANTS
 export class BaseWindow
     var _id = -1
     var _on_left: bool
+    var _lines: list<any> = ['nothing to show!']
     var _CallbackSwitchFocus: func(): bool
     var _CallbackExit: func(): bool
-    var _lines: list<any> = ['nothing to show!']
     var savestate: dict<any> = null_dict
 
     def _GetCommonPopupProps(): dict<any> # {{{
@@ -28,6 +28,7 @@ export class BaseWindow
             padding: [0, 1, 0, 1],
             highlight: 'Constant',
         }
+
         if this._on_left
             --props.col
             props.pos = 'topright'
@@ -65,7 +66,7 @@ export class BaseWindow
         var opts = this._GetCommonPopupProps()
         opts.title = title
         opts->extend(this.savestate)
-        this._id = popup_create(this._lines, opts)
+        this._id = this._lines->popup_create(opts)
 
         if this.savestate->has_key('_curpos')
             $':noa call cursor({this.savestate._curpos}, 1)'->win_execute(this._id)

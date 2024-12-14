@@ -17,6 +17,7 @@ vim9script
 
 import autoload '../autoload/wrapper.vim'
 
+# <TODO> make this lazy
 var poplar = wrapper.PoplarWrapper.new()
 command! Poplar poplar.Run()
 nnoremap <silent> <leader>p :Poplar<cr>

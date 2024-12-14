@@ -6,15 +6,18 @@ import './constants.vim' as CONSTANTS
 # BaseWindows should always be doubletons
 export class BaseWindow
     var _id = -1
-    var _alt_id = -1
     var _lines: list<any>
+    var _on_left: bool
+    var _CallbackSwitchFocus: func(): void
+    var _CallbackExit: func(): bool
+    var savestate: dict<any> = null_dict
 
     def _GetCommonPopupProps(): dict<any>
         var true_height = [&lines - 6, CONSTANTS.MAX_HEIGHT]->min()
-        return {
-            col: &columns / 2,
+        var props = {
+            col: &columns / 2 + 1,
             line: (&lines - true_height) / 2 - 1,
-            cursorline: true,
+            firstline: this.savestate->get('firstline', 1),
             minwidth: CONSTANTS.MIN_WIDTH,
             minheight: true_height,
             maxheight: true_height,
@@ -23,8 +26,14 @@ export class BaseWindow
             borderchars: ['─', '│', '─', '│', '╭', '╮', '╯', '╰'],
             padding: [0, 1, 0, 1],
             highlight: 'Constant',
-            zindex: CONSTANTS.Z_WIN_FOCUS,
+            pos: 'topleft',
         }
+        if this._on_left
+            --props.col
+            props.pos = 'topright'
+        endif
+
+        return props
     enddef
 
 
@@ -32,49 +41,42 @@ export class BaseWindow
         var key_norm = keycodes.NormalizeKey(key)
 
         if key_norm ==? '<esc>'
-            this._alt_id->popup_close()
-            return this._id->popup_filter_menu(key)
+            return this._CallbackExit()
         elseif key_norm ==? 'j'
+            if this._id->getcurpos()[1] >= this._lines->len()
+                return true
+            endif
             return this._id->popup_filter_menu(key)
         elseif key_norm ==? 'k'
+            if this._id->getcurpos()[1] <= 1
+                return true
+            endif
             return this._id->popup_filter_menu(key)
         endif
 
         return this._SpecificFilter(key_norm)
     enddef
 
-
-    def RelinquishFocus()
-        assert_true(this._id > 0 && this._alt_id > 0,
-            $'invalid winids for call to RelinquishFocus: {this._id}, {this._alt_id}')
-        this._id->popup_setoptions({
-            cursorline: false,
-            zindex: CONSTANTS.Z_WIN_NOFOCUS
-        })
-        this._alt_id->popup_setoptions({
-            cursorline: true,
-            zindex: CONSTANTS.Z_WIN_FOCUS
-        })
+    
+    def SaveCurrentState()
+        var opts = this._id->popup_getoptions()
+        this.savestate = {
+            _fline: 'w0'->line(this._id),
+            _curpos: this._id->getcurpos()[1],
+            zindex: opts.zindex,
+            cursorline: opts.cursorline
+        }
     enddef
 
 
     def _SpecificFilter(key: string): bool
         throw '_SpecificFilter was not specified!'
-        return this._id->popup_filter_menu(key)
+        return false
     enddef
 
 
     def GetId(): number
         return this._id
-    enddef
-
-
-    def SetAltWindowId(alt_id: number)
-        this._alt_id = alt_id
-    enddef
-
-
-    def new()
     enddef
 
 endclass

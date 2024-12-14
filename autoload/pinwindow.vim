@@ -10,16 +10,10 @@ export class PinWindow extends basewindow.BaseWindow
     enddef
 
 
-    def Open()
-        this._lines = 'the quick brown fox'->split(' ')
-        var opts = this._GetCommonPopupProps()
-        opts.title = ' pinned '
-        opts->extend(this.savestate)
-        this._id = popup_create(this._lines, opts)
-
-        if this.savestate->has_key('_curpos')
-            $':noa call cursor({this.savestate._curpos}, 1)'->win_execute(this._id)
-        endif
+    def InitLines()
+        assert_true(this.savestate->empty())
+        var lines = 'placeholder text'->split()
+        this.SetLines(lines)
     enddef
 
 

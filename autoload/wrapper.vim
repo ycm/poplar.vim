@@ -17,10 +17,10 @@ export class PoplarWrapper
 
 
     def Run()
-        this._tree_win.Open()
-        this._pin_win.Open()
+        this._tree_win.Open(' poplar ')
+        this._pin_win.Open(' pinned ')
 
-        if !this._tree_win.savestate->has_key('zindex')
+        if this._tree_win.savestate->empty()
             this._tree_win.GetId()->popup_setoptions({
                 zindex: CONSTANTS.Z_WIN_FOCUS,
                 cursorline: true
@@ -29,6 +29,8 @@ export class PoplarWrapper
                 zindex: CONSTANTS.Z_WIN_NOFOCUS,
                 cursorline: false
             })
+            this._tree_win.InitLines()
+            this._pin_win.InitLines()
         endif
     enddef
 

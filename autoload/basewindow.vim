@@ -6,13 +6,13 @@ import './constants.vim' as CONSTANTS
 # BaseWindows should always be doubletons
 export class BaseWindow
     var _id = -1
-    var _lines: list<any>
     var _on_left: bool
     var _CallbackSwitchFocus: func(): bool
     var _CallbackExit: func(): bool
+    var _lines: list<any> = ['nothing to show!']
     var savestate: dict<any> = null_dict
 
-    def _GetCommonPopupProps(): dict<any>
+    def _GetCommonPopupProps(): dict<any> # {{{
         var true_height = [&lines - 6, CONSTANTS.MAX_HEIGHT]->min()
         var props = {
             pos: 'topleft',
@@ -34,10 +34,10 @@ export class BaseWindow
         endif
 
         return props
-    enddef
+    enddef # }}}
 
 
-    def _BaseFilter(id: number, key: string): bool
+    def _BaseFilter(id: number, key: string): bool # {{{
         var key_norm = keycodes.NormalizeKey(key)
 
         if key_norm ==? '<esc>'
@@ -58,28 +58,49 @@ export class BaseWindow
         endif
 
         return this._SpecificFilter(key_norm)
-    enddef
+    enddef # }}}
 
-    
-    def SaveCurrentState()
+
+    def Open(title: string = ' no title ') # {{{
+        var opts = this._GetCommonPopupProps()
+        opts.title = title
+        opts->extend(this.savestate)
+        this._id = popup_create(this._lines, opts)
+
+        if this.savestate->has_key('_curpos')
+            $':noa call cursor({this.savestate._curpos}, 1)'->win_execute(this._id)
+        endif
+    enddef # }}}
+
+
+    def SaveCurrentState() # {{{
         var opts = this._id->popup_getoptions()
         this.savestate = {
+            _lines: this._lines,
             _fline: 'w0'->line(this._id),
             _curpos: this._id->getcurpos()[1],
             zindex: opts.zindex,
             cursorline: opts.cursorline
         }
-    enddef
+    enddef # }}}
 
 
-    def _SpecificFilter(key: string): bool
-        throw '_SpecificFilter was not specified!'
-        return false
-    enddef
-
-
-    def GetId(): number
+    def GetId(): number # {{{
         return this._id
-    enddef
+    enddef # }}}
+
+
+    def SetLines(new_lines: list<any>) # {{{
+        var curr_line = this._id->getcurpos()[1]
+        var new_len = new_lines->len()
+        this._id->popup_settext(new_lines)
+        this._lines = new_lines
+        if curr_line > new_len
+            var new_lnum = [curr_line, new_len]->min()
+            var new_fline = [1, new_len - this._id->popup_getoptions().minheight + 1]->max()
+            $':noa call cursor({new_lnum}, 1)'->win_execute(this._id)
+            this._id->popup_setoptions({firstline: new_fline})
+        endif
+    enddef # }}}
 
 endclass

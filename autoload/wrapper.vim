@@ -5,8 +5,8 @@ import './pinwindow.vim'
 import './constants.vim' as CONSTANTS
 
 export class PoplarWrapper
-    var _tree_win: any
-    var _pin_win: any
+    var _tree_win: treewindow.TreeWindow
+    var _pin_win: pinwindow.PinWindow
 
     def new()
         this._tree_win = treewindow.TreeWindow.new(

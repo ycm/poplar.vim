@@ -36,6 +36,9 @@ export class TreeWindow extends basewindow.BaseWindow
         elseif key == 'I'
             this._tree.ToggleHidden()
             this.SetLines(this._tree.GetPrettyFormatLines())
+        elseif key == 'C'
+            this._tree.RaiseRoot()
+            this.SetLines(this._tree.GetPrettyFormatLines())
         endif
         return true
     enddef

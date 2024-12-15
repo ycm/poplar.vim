@@ -3,7 +3,6 @@ vim9script
 class FileTreeNode # {{{
     var path: string
     public var children: list<FileTreeNode> = null_list
-    public var is_expanded = false
 
     def new(this.path)
     enddef
@@ -15,9 +14,30 @@ export class FileTree
     var root: FileTreeNode # not necessarily cwd
     var _text_list: list<string>
     var _show_hidden: bool
+    var _expanded_paths: dict<string> # this is a set
 
     def new(root_path: string)
         this.root = FileTreeNode.new(root_path)
+    enddef
+
+
+    def RaiseRoot()
+        if this.root.path == '/'
+            return
+        endif
+        var higher_root = FileTreeNode.new(this.root.path->fnamemodify(':h'))
+        this.ToggleDir(higher_root)
+        for [i, child] in higher_root.children->items()
+            if child.path == this.root.path
+                higher_root.children[i] = this.root
+                break
+            endif
+        endfor
+        this.root = higher_root
+
+        if !this._expanded_paths->has_key(this.root.path)
+            this._expanded_paths[this.root.path] = null_string
+        endif
     enddef
 
 
@@ -40,7 +60,7 @@ export class FileTree
         endif
         var indent = '  '->repeat(depth)
         if node.path->isdirectory()
-            if node.is_expanded
+            if this._expanded_paths->has_key(node.path)
                 this._text_list->add(indent .. '▾ ' .. tail .. '/')
                 for child in node.children
                     this._PrettyFormatLineRecur(child, depth + 1)
@@ -64,7 +84,7 @@ export class FileTree
                 endif
                 ct += 1
                 found = node
-                if node.is_expanded
+                if this._expanded_paths->has_key(node.path)
                     for child in node.children
                         GetNodeRecur(child)
                     endfor
@@ -80,12 +100,18 @@ export class FileTree
         if !node.path->isdirectory()
             throw $'fatal: tried to ToggleDir on nondir: {node.path}'
         endif
-        node.is_expanded = !node.is_expanded
+        if this._expanded_paths->has_key(node.path)
+            unlet this._expanded_paths[node.path]
+        else
+            this._expanded_paths[node.path] = null_string
+        endif
         if node.children == null_list
-            var listings = $'{node.path}/.*'
+            var fmt_path = node.path == '/' ? node.path : $'{node.path}/'
+            var listings = $'{fmt_path}.*'
                     ->glob(true, true)
                     ->filter((_, p) => p !~ '.*/\.\+$')
-            listings += $'{node.path}/*'->glob(true, true)
+                    + $'{fmt_path}*'->glob(true, true)
+
             var dirs = listings
                     ->copy()
                     ->filter((_, p) => p->isdirectory())

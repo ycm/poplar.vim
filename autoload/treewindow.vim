@@ -25,8 +25,14 @@ export class TreeWindow extends basewindow.BaseWindow
     def _SpecificFilter(key: string): bool
         if key ==? '<cr>'
             var idx = this._id->getcurpos()[1] - 1
-            this._tree.ToggleDir(this._tree.GetNodeAtDisplayIndex(idx))
-            this.SetLines(this._tree.GetPrettyFormatLines())
+            var node = this._tree.GetNodeAtDisplayIndex(idx)
+            if node.path->isdirectory()
+                this._tree.ToggleDir(node)
+                this.SetLines(this._tree.GetPrettyFormatLines())
+            else
+                execute $'drop {node.path->fnamemodify(':~:.')}'
+                return this._CallbackExit()
+            endif
         elseif key == 'I'
             this._tree.ToggleHidden()
             this.SetLines(this._tree.GetPrettyFormatLines())

@@ -36,8 +36,13 @@ export class TreeWindow extends basewindow.BaseWindow
         elseif key == 'I'
             this._tree.ToggleHidden()
             this.SetLines(this._tree.GetPrettyFormatLines())
-        elseif key == 'C'
+        elseif key == 'C' # placeholder key
             this._tree.RaiseRoot()
+            this.SetLines(this._tree.GetPrettyFormatLines())
+        elseif key == 'c' # placeholder key
+            var idx = this._id->getcurpos()[1] - 1
+            var node = this._tree.GetNodeAtDisplayIndex(idx)
+            this._tree.ChangeRoot(node)
             this.SetLines(this._tree.GetPrettyFormatLines())
         endif
         return true

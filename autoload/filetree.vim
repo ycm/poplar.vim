@@ -21,6 +21,18 @@ export class FileTree
     enddef
 
 
+    def ChangeRoot(node: FileTreeNode)
+        if !node.path->isdirectory() || node == this.root
+            return
+        endif
+        this.ToggleDir(node)
+        this.root = node
+        if !this._expanded_paths->has_key(this.root.path)
+            this._expanded_paths[this.root.path] = null_string
+        endif
+    enddef
+
+
     def RaiseRoot()
         if this.root.path == '/'
             return

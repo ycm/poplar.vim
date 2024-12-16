@@ -6,11 +6,11 @@ import './constants.vim' as CONSTANTS
 
 
 export def Run()
-    if !'g:poplar'->exists()
-        g:poplar = {
-            tree_win: treewindow.TreeWindow.new(true, SwitchFocus, Exit),
-            pin_win: pinwindow.PinWindow.new(false, SwitchFocus, Exit)
-        }
+    if !g:poplar->has_key('tree_win')
+        g:poplar['tree_win'] = treewindow.TreeWindow.new(true, SwitchFocus, Exit)
+    endif
+    if !g:poplar->has_key('pin_win')
+        g:poplar['pin_win'] = pinwindow.PinWindow.new(false, SwitchFocus, Exit)
     endif
 
     g:poplar.tree_win.Open(' poplar ')

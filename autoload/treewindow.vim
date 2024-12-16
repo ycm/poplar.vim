@@ -2,6 +2,7 @@ vim9script
 
 import './basewindow.vim'
 import './filetree.vim'
+import './inputline.vim'
 
 export class TreeWindow extends basewindow.BaseWindow
     var _tree: filetree.FileTree
@@ -36,6 +37,8 @@ export class TreeWindow extends basewindow.BaseWindow
         elseif key == 'I'
             this._tree.ToggleHidden()
             this.SetLines(this._tree.GetPrettyFormatLines())
+        elseif key == 'm'
+            inputline.Open('《á中b́あć가。', 'my title', this._CallbackInputLineEnter)
         elseif key == 'C' # placeholder key
             this._tree.RaiseRoot()
             this.SetLines(this._tree.GetPrettyFormatLines())
@@ -46,6 +49,11 @@ export class TreeWindow extends basewindow.BaseWindow
             this.SetLines(this._tree.GetPrettyFormatLines())
         endif
         return true
+    enddef
+
+
+    def _CallbackInputLineEnter(text: string)
+        echom $'placeholder: received <{text}>'
     enddef
 
 endclass

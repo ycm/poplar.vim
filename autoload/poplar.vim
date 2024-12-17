@@ -4,6 +4,22 @@ import './treewindow.vim'
 import './pinwindow.vim'
 import './constants.vim' as CONSTANTS
 
+for [key, val] in CONSTANTS.PROPS ->items()
+    var propname = val[0]
+    if propname->prop_type_get() != {}
+        continue
+    endif
+    var default  = val[1]
+    var fallback = val[2]
+    var poplar_hlgroup = $'Poplar{key}'
+    if poplar_hlgroup->hlexists()
+        propname->prop_type_add({highlight: poplar_hlgroup})
+    elseif default->hlexists()
+        propname->prop_type_add({highlight: default})
+    else
+        propname->prop_type_add({highlight: fallback})
+    endif
+endfor
 
 export def Run()
     if !g:poplar->has_key('tree_win')

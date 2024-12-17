@@ -25,7 +25,7 @@ export class BaseWindow
             border: [],
             borderchars: ['─', '│', '─', '│', '╭', '╮', '╯', '╰'],
             padding: [0, 1, 0, 1],
-            highlight: 'Constant',
+            highlight: 'Normal',
         }
 
         if this._on_left

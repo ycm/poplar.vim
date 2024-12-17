@@ -10,12 +10,6 @@ import './constants.vim' as CONSTANTS
 export def Open(starting_text: string,
                 title: string = 'title',
                 CallbackEnter: func(string) = null_function)
-    if 'poplar_prop_input_text'->prop_type_get() == {}
-        'poplar_prop_input_text'->prop_type_add({highlight: 'Normal'})
-    endif
-    if 'poplar_prop_input_cursor'->prop_type_get() == {}
-        'poplar_prop_input_cursor'->prop_type_add({highlight: 'PoplarInv'})
-    endif
     g:poplar.input.text = starting_text
     g:poplar.input.CallbackEnter = CallbackEnter
     g:poplar.input = {
@@ -94,9 +88,9 @@ def UpdateText()
         text: tspc[xos :],
         props: [
             {col: 1, length: tspc[xos :]->len(),
-             type: 'poplar_prop_input_text'},
+             type: 'prop_poplar_input_text'},
             {col: 1 + tspc->slice(xos, cur)->len(), length: 1,
-             type: 'poplar_prop_input_cursor'}
+             type: 'prop_poplar_input_cursor'}
         ]
     }])
 enddef

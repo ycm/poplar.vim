@@ -12,7 +12,7 @@ endclass # }}}
 
 export class FileTree
     var root: FileTreeNode # not necessarily cwd
-    var _text_list: list<string>
+    var _text_list: list<dict<any>>
     var _show_hidden: bool
     var _expanded_paths: dict<string> # this is a set
 
@@ -57,10 +57,24 @@ export class FileTree
     enddef
 
 
-    def GetPrettyFormatLines(): list<string>
+    def GetPrettyFormatLines(): list<dict<any>>
         this._text_list = []
         this._PrettyFormatLineRecur(this.root, 0)
         return this._text_list
+    enddef
+
+
+    def _FormatWithProp(text: string,
+                        prop: string,
+                        indents: number = 0): dict<any>
+        return {
+            text: '  '->repeat(indents) .. text,
+            props: [{
+                col: 2 * indents + 1,
+                length: text->len(),
+                type: prop
+            }]
+        }
     enddef
 
 
@@ -72,15 +86,21 @@ export class FileTree
         var indent = '  '->repeat(depth)
         if node.path->isdirectory()
             if this._expanded_paths->has_key(node.path)
-                this._text_list->add(indent .. '▾ ' .. tail .. '/')
+                this._text_list->add(this._FormatWithProp(
+                    $'▾ {tail}/', 'prop_poplar_tree_dir', depth))
                 for child in node.children
                     this._PrettyFormatLineRecur(child, depth + 1)
                 endfor
             else
-                this._text_list->add(indent .. '▸ ' .. tail .. '/')
+                this._text_list->add(this._FormatWithProp(
+                    $'▸ {tail}/', 'prop_poplar_tree_dir', depth))
             endif
+        elseif node.path->executable()
+            this._text_list->add(this._FormatWithProp(
+                $'  {tail}*', 'prop_poplar_tree_exec_file', depth))
         else
-            this._text_list->add(indent .. '  ' .. tail)
+            this._text_list->add(this._FormatWithProp(
+                $'  {tail}', 'prop_poplar_tree_file', depth))
         endif
     enddef
 

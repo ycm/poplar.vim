@@ -21,8 +21,9 @@ export class FileTree
     enddef
 
 
-    def HardRefresh()
-        this.root = FileTreeNode.new(getcwd())
+    def HardRefresh() # <TODO> make this open previously opened dirs
+        this.root = FileTreeNode.new(this.root.path)
+        this._expanded_paths = {} # <HACK> failsafe
         this._EnsureExpand(this.root)
     enddef
 

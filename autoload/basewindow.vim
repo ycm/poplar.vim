@@ -1,6 +1,5 @@
 vim9script
 
-import './keycodes.vim'
 import './constants.vim' as CONSTANTS
 
 # BaseWindows should always be doubletons
@@ -39,8 +38,7 @@ export class BaseWindow
 
 
     def _BaseFilter(id: number, key: string): bool # {{{
-        var key_norm = keycodes.NormalizeKey(key)
-
+        var key_norm = key->keytrans()
         if key_norm ==? '<esc>'
             return this._CallbackExit()
         elseif key_norm == 'j'
@@ -57,7 +55,6 @@ export class BaseWindow
             || (key_norm == 'l' && this._on_left)
             return this._CallbackSwitchFocus()
         endif
-
         return this._SpecificFilter(key_norm)
     enddef # }}}
 

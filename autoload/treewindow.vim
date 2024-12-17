@@ -38,7 +38,7 @@ export class TreeWindow extends basewindow.BaseWindow
             this._tree.ToggleHidden()
             this.SetLines(this._tree.GetPrettyFormatLines())
         elseif key == 'm'
-            inputline.Open('《á中b́あć가。', 'my title', this._CallbackInputLineEnter)
+            inputline.Open('ABCDEFGH', 'title', this._CallbackInputLineEnter)
         elseif key == 'C' # placeholder key
             this._tree.RaiseRoot()
             this.SetLines(this._tree.GetPrettyFormatLines())

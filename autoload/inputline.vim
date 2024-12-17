@@ -22,17 +22,19 @@ export def Open(starting_text: string,
     g:poplar.input = {
         text: starting_text,
         cursor: starting_text->strcharlen(),
-        CallbackEnter: CallbackEnter
+        CallbackEnter: CallbackEnter,
+        width: 10, # <TODO> don't leave this
+        xoff: 0,
     }
     g:poplar.input.id = ''->popup_create({
         title: $' {title} ',
         zindex: CONSTANTS.Z_WIN_INPUT,
         highlight: 'Normal',
-        minwidth: 50,
-        maxwidth: 50,
+        minwidth: g:poplar.input.width,
+        maxwidth: g:poplar.input.width,
         minheight: 1,
         maxheight: 1,
-        padding: [0, 1, 0, 1],
+        # padding: [0, 1, 0, 1],
         border: [],
         borderchars: ['─', '│', '─', '│', '╭', '╮', '╯', '╰'],
         mapping: false,
@@ -47,8 +49,8 @@ def ConsumeKey(id: number, key: string): bool
     # <NOTE> ' '->keytrans() == '<Space>' and '<'->keytrans() == '<lt>'
     var is_printable = key_norm->strcharlen() == 1
             || (key->len() == 1
-                && key->char2nr() >= 32
-                && key->char2nr() != 127)
+                    && key->char2nr() >= 32
+                    && key->char2nr() != 127)
     return is_printable ? InsertChar(key) : FilterNonPrintable(key_norm)
 enddef
 
@@ -56,14 +58,65 @@ enddef
 def UpdateText()
     var t = g:poplar.input.text
     var c = g:poplar.input.cursor
-    var props = [{col: 1 + t->slice(0, c)->len(), length: 1, type: 'poplar_prop_input_cursor'}]
-    if t->len() > 0
-        props->add({col: 1, length: t->len(), type: 'poplar_prop_input_text'})
+    var xoff = g:poplar.input.xoff
+    var N = t->strcharlen()
+    var W = g:poplar.input.width
+
+    if N == 0
+        g:poplar.input.id->popup_settext([{
+            text: ' ', props: [{col: 1, length: 1, type: 'poplar_prop_input_cursor'}]
+        }])
+    elseif c == N # cursor is at end of nonempty line
+        var tspc = t .. ' '
+        for i in range(c) # 0, 1, 2, ... c - 1
+            if tspc[i : c]->strwidth() <= W
+                g:poplar.input.xoff = i
+                g:poplar.input.id->popup_settext([{
+                    text: tspc[i :]
+                }])
+                break
+            endif
+        endfor
+    else
+        if c > xoff
+            var redge = range(xoff, N + 1)
+                    ->filter((_, i) => t[xoff : i]->strwidth() <= W)
+                    ->max()
+            # current viewport = t[xoff : redge]
+            if c > redge
+                while xoff <= c && t[xoff : c]->strwidth() > W
+                    ++xoff
+                endwhile
+                g:poplar.input.xoff = xoff
+                g:poplar.input.id->popup_settext([{
+                    text: t[xoff :]
+                }])
+            elseif t[xoff : c]->strwidth() >= W / 2 # best case
+                g:poplar.input.xoff = xoff
+                g:poplar.input.id->popup_settext([{
+                    text: t[xoff :]
+                }])
+            else
+                # t[xoff : c]->strwidth() < W / 2
+                while xoff > 0 && t[xoff : c]->strwidth() < W / 2
+                    --xoff
+                endwhile
+                g:poplar.input.xoff = xoff
+                g:poplar.input.id->popup_settext([{
+                    text: t[xoff :]
+                }])
+            endif
+        else
+            xoff = c
+            while xoff > 0 && t[xoff : c]->strwidth() < W / 2
+                --xoff
+            endwhile
+            g:poplar.input.xoff = xoff
+            g:poplar.input.id->popup_settext([{
+                text: t[xoff :]
+            }])
+        endif
     endif
-    g:poplar.input.id->popup_settext([{
-        text: c >= t->strcharlen() ? t .. ' ' : t,
-        props: props
-    }])
 enddef
 
 
@@ -88,6 +141,8 @@ def FilterNonPrintable(key: string): bool
         g:poplar.input.CallbackEnter(g:poplar.input.text)
         g:poplar.input.id->popup_close()
         g:poplar.input->filter((_, _) => false) # clear dict
+        return true
+    elseif ['<cursorhold']->index(key) >= 0
         return true
     # ---------------------------- fallthrough -------------------------------
     elseif key ==? '<bs>'

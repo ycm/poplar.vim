@@ -21,15 +21,18 @@ export class FileTree
     enddef
 
 
+    def HardRefresh()
+        this.root = FileTreeNode.new(getcwd())
+        this._EnsureExpand(this.root)
+    enddef
+
+
     def ChangeRoot(node: FileTreeNode)
         if !node.path->isdirectory() || node == this.root
             return
         endif
-        this.ToggleDir(node)
         this.root = node
-        if !this._expanded_paths->has_key(this.root.path)
-            this._expanded_paths[this.root.path] = null_string
-        endif
+        this._EnsureExpand(this.root)
     enddef
 
 
@@ -38,7 +41,7 @@ export class FileTree
             return
         endif
         var higher_root = FileTreeNode.new(this.root.path->fnamemodify(':h'))
-        this.ToggleDir(higher_root)
+        this._EnsureExpand(higher_root)
         for [i, child] in higher_root.children->items()
             if child.path == this.root.path
                 higher_root.children[i] = this.root
@@ -46,10 +49,6 @@ export class FileTree
             endif
         endfor
         this.root = higher_root
-
-        if !this._expanded_paths->has_key(this.root.path)
-            this._expanded_paths[this.root.path] = null_string
-        endif
     enddef
 
 
@@ -132,6 +131,14 @@ export class FileTree
                     ->filter((_, p) => !p->isdirectory())
                     ->mapnew((_, p) => FileTreeNode.new(p))
             node.children = dirs + nondirs
+        endif
+    enddef
+
+
+    def _EnsureExpand(node: FileTreeNode)
+        this.ToggleDir(node)
+        if !this._expanded_paths->has_key(node.path)
+            this._expanded_paths[node.path] = null_string
         endif
     enddef
 

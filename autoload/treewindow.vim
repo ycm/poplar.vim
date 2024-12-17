@@ -47,6 +47,9 @@ export class TreeWindow extends basewindow.BaseWindow
             var node = this._tree.GetNodeAtDisplayIndex(idx)
             this._tree.ChangeRoot(node)
             this.SetLines(this._tree.GetPrettyFormatLines())
+        elseif key == 'R'
+            this._tree.HardRefresh()
+            this.SetLines(this._tree.GetPrettyFormatLines())
         endif
         return true
     enddef

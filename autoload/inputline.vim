@@ -23,8 +23,8 @@ export def Open(starting_text: string,
         text: starting_text,
         cursor: starting_text->strcharlen(),
         CallbackEnter: CallbackEnter,
-        width: 10, # <TODO> don't leave this
-        xoff: 0,
+        width: 25, # <TODO> don't leave this
+        xoffset: 0,
     }
     g:poplar.input.id = ''->popup_create({
         title: $' {title} ',
@@ -34,7 +34,7 @@ export def Open(starting_text: string,
         maxwidth: g:poplar.input.width,
         minheight: 1,
         maxheight: 1,
-        # padding: [0, 1, 0, 1],
+        padding: [0, 1, 0, 1],
         border: [],
         borderchars: ['─', '│', '─', '│', '╭', '╮', '╯', '╰'],
         mapping: false,
@@ -56,77 +56,59 @@ enddef
 
 
 def UpdateText()
-    var t = g:poplar.input.text
-    var c = g:poplar.input.cursor
-    var xoff = g:poplar.input.xoff
-    var N = t->strcharlen()
-    var W = g:poplar.input.width
+    var txt = g:poplar.input.text
+    var cur = g:poplar.input.cursor
+    var xos = g:poplar.input.xoffset
+    var width = g:poplar.input.width
 
-    if N == 0
-        g:poplar.input.id->popup_settext([{
-            text: ' ', props: [{col: 1, length: 1, type: 'poplar_prop_input_cursor'}]
-        }])
-    elseif c == N # cursor is at end of nonempty line
-        var tspc = t .. ' '
-        for i in range(c) # 0, 1, 2, ... c - 1
-            if tspc[i : c]->strwidth() <= W
-                g:poplar.input.xoff = i
-                g:poplar.input.id->popup_settext([{
-                    text: tspc[i :]
-                }])
-                break
-            endif
-        endfor
-    else
-        if c > xoff
-            var redge = range(xoff, N + 1)
-                    ->filter((_, i) => t[xoff : i]->strwidth() <= W)
+    # <INFO> If cursor is at the end of the string, display as much text as
+    # possible by setting the viewport's left edge to the lowest value for
+    # which the cursor is displayed.
+    if cur == txt->strcharlen()
+        xos = range(cur)
+            ->filter((_, i) => $'{txt} '[i : cur]->strwidth() <= width)
+            ->min()
+    # <INFO> OTOH if cursor is mid-text but to the right of the viewport,
+    # increment the viewport's left edge until cursor is displayed
+    elseif cur > xos
+            && cur > range(xos, 1 + txt->strcharlen())
+                    ->filter((_, i) => txt[xos : i]->strwidth() <= width)
                     ->max()
-            # current viewport = t[xoff : redge]
-            if c > redge
-                while xoff <= c && t[xoff : c]->strwidth() > W
-                    ++xoff
-                endwhile
-                g:poplar.input.xoff = xoff
-                g:poplar.input.id->popup_settext([{
-                    text: t[xoff :]
-                }])
-            elseif t[xoff : c]->strwidth() >= W / 2 # best case
-                g:poplar.input.xoff = xoff
-                g:poplar.input.id->popup_settext([{
-                    text: t[xoff :]
-                }])
-            else
-                # t[xoff : c]->strwidth() < W / 2
-                while xoff > 0 && t[xoff : c]->strwidth() < W / 2
-                    --xoff
-                endwhile
-                g:poplar.input.xoff = xoff
-                g:poplar.input.id->popup_settext([{
-                    text: t[xoff :]
-                }])
-            endif
-        else
-            xoff = c
-            while xoff > 0 && t[xoff : c]->strwidth() < W / 2
-                --xoff
-            endwhile
-            g:poplar.input.xoff = xoff
-            g:poplar.input.id->popup_settext([{
-                text: t[xoff :]
-            }])
-        endif
+        while xos <= cur && txt[xos : cur]->strwidth() > width
+            ++xos
+        endwhile
+    # <INFO> Otherwise, decrement the viewport's left edge until cursor is
+    # displayed on the left half of the viewport.
+    elseif cur <= xos
+            || (cur > xos && txt[xos : cur]->strwidth() < width / 2)
+        xos = [cur, xos]->min()
+        while xos > 0 && txt[xos : cur]->strwidth() < width / 2
+            --xos
+        endwhile
     endif
+
+    var tspc = cur == txt->strcharlen() ? $'{txt} ' : txt
+    g:poplar.input.xoffset = xos
+    g:poplar.input.id->popup_settext([{
+        text: tspc[xos :],
+        props: [
+            {col: 1, length: tspc[xos :]->len(),
+             type: 'poplar_prop_input_text'},
+            {col: 1 + tspc->slice(xos, cur)->len(), length: 1,
+             type: 'poplar_prop_input_cursor'}
+        ]
+    }])
 enddef
 
 
 def InsertChar(str: string): bool
-    var t = g:poplar.input.text
-    var c = g:poplar.input.cursor
-    t = t->slice(0, c) .. str .. t->slice(c)
+    var txt = g:poplar.input.text
+    var cur = g:poplar.input.cursor
+    txt = txt->slice(0, cur) .. str .. txt->slice(cur)
     # handle composing characters
-    g:poplar.input.cursor += t->strcharlen() - g:poplar.input.text->strcharlen()
-    g:poplar.input.text = t
+    g:poplar.input.cursor += txt->strcharlen()
+            - g:poplar.input.text->strcharlen()
+    g:poplar.input.text = txt
     UpdateText()
     return true
 enddef
@@ -148,15 +130,15 @@ def FilterNonPrintable(key: string): bool
     elseif key ==? '<bs>'
         if g:poplar.input.cursor > 0
             --g:poplar.input.cursor
-            var t = g:poplar.input.text
-            var c = g:poplar.input.cursor
-            g:poplar.input.text = t->slice(0, c) .. t->slice(c + 1)
+            var txt = g:poplar.input.text
+            var cur = g:poplar.input.cursor
+            g:poplar.input.text = txt->slice(0, cur) .. txt->slice(cur + 1)
         endif
     elseif key ==? '<del>'
-        var t = g:poplar.input.text
-        var c = g:poplar.input.cursor
-        if c < t->strcharlen()
-            g:poplar.input.text = t->slice(0, c) .. t->slice(c + 1)
+        var txt = g:poplar.input.text
+        var cur = g:poplar.input.cursor
+        if cur < txt->strcharlen()
+            g:poplar.input.text = txt->slice(0, cur) .. txt->slice(cur + 1)
         endif
     elseif key ==? '<left>'
         if g:poplar.input.cursor > 0

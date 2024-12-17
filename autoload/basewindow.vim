@@ -75,8 +75,8 @@ export class BaseWindow
         var opts = this._id->popup_getoptions()
         this.savestate = {
             _lines: this._lines,
-            _fline: 'w0'->line(this._id),
             _curpos: this._id->getcurpos()[1],
+            firstline: 'w0'->line(this._id),
             zindex: opts.zindex,
             cursorline: opts.cursorline
         }

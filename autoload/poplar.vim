@@ -4,6 +4,7 @@ import './treewindow.vim'
 import './pinwindow.vim'
 import './constants.vim' as CONSTANTS
 
+# TEXT PROPERTIES -------------------------------------------------------- {{{
 for [key, val] in CONSTANTS.PROPS ->items()
     var propname = val[0]
     if propname->prop_type_get() != {}
@@ -19,7 +20,7 @@ for [key, val] in CONSTANTS.PROPS ->items()
     else
         propname->prop_type_add({highlight: fallback})
     endif
-endfor
+endfor # }}}
 
 export def Run()
     if !g:poplar->has_key('tree_win')

@@ -5,3 +5,7 @@ export const Z_WIN_FOCUS   = 100
 export const Z_WIN_NOFOCUS = 50
 export const MAX_HEIGHT    = 20
 export const MIN_WIDTH     = 50
+
+export const K_IGNORE = [
+    '<cursorhold>',
+]

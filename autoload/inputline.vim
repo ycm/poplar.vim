@@ -24,6 +24,8 @@ export def Open(starting_text: string,
         CallbackEnter: CallbackEnter,
         width: 25, # <TODO> don't leave this
         xoffset: 0,
+        ispaste: false,
+        pastestr: '',
     }
     g:poplar.input.id = ''->popup_create({
         title: $' {title} ',
@@ -50,7 +52,7 @@ def ConsumeKey(id: number, key: string): bool
             || (key->len() == 1
                     && key->char2nr() >= 32
                     && key->char2nr() != 127)
-    return is_printable ? InsertChar(key) : FilterNonPrintable(key_norm)
+    return is_printable ? Insert(key) : FilterNonPrintable(key_norm)
 enddef
 
 
@@ -100,7 +102,12 @@ def UpdateText()
 enddef
 
 
-def InsertChar(str: string): bool
+def Insert(str: string): bool
+    if g:poplar.input.ispaste
+        g:poplar.input.pastestr = g:poplar.input.pastestr .. str
+        return true
+    endif
+
     var txt = g:poplar.input.text
     var cur = g:poplar.input.cursor
     txt = txt->slice(0, cur) .. str .. txt->slice(cur)
@@ -118,12 +125,22 @@ def FilterNonPrintable(key: string): bool
         g:poplar.input.id->popup_close()
         g:poplar.input->filter((_, _) => false) # clear dict
         return true
+    elseif key ==? '<pastestart>'
+        g:poplar.input.ispaste = true
+        return true
+    elseif key ==? '<pasteend>'
+        g:poplar.input.ispaste = false
+        Insert(g:poplar.input.pastestr)
+        g:poplar.input.pastestr = ''
+        return true
+    elseif g:poplar.input.ispaste
+        return true
     elseif key ==? '<cr>'
         g:poplar.input.CallbackEnter(g:poplar.input.text)
         g:poplar.input.id->popup_close()
         g:poplar.input->filter((_, _) => false) # clear dict
         return true
-    elseif ['<cursorhold']->index(key) >= 0
+    elseif CONSTANTS.K_IGNORE->index(key) >= 0
         return true
     # ---------------------------- fallthrough -------------------------------
     elseif key ==? '<bs>'

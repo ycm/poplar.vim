@@ -21,10 +21,17 @@ export class FileTree
     enddef
 
 
-    def HardRefresh() # <TODO> make this open previously opened dirs
+    def HardRefresh()
         this.root = FileTreeNode.new(this.root.path)
-        this._expanded_paths = {} # <HACK> failsafe
-        this._EnsureExpand(this.root)
+        def Recur(node: FileTreeNode)
+            this._EnsureExpand(node)
+            for child in node.children
+                if this._expanded_paths->has_key(child.path)
+                    Recur(child)
+                endif
+            endfor
+        enddef
+        Recur(this.root)
     enddef
 
 
@@ -33,7 +40,13 @@ export class FileTree
             return
         endif
         this.root = node
-        this._EnsureExpand(this.root)
+        this.HardRefresh()
+    enddef
+
+
+    def ResetRootToCwd()
+        this.root = FileTreeNode.new(getcwd())
+        this.HardRefresh()
     enddef
 
 

@@ -22,7 +22,7 @@ export class BaseWindow
             minwidth: CONSTANTS.MIN_WIDTH,
             maxwidth: (&columns / 2) - 8,
             minheight: maxheight / 2, # <TODO> fix this logic
-            maxheight: maxheight,
+            maxheight: maxheight / 2,
             filter: this._BaseFilter,
             border: [],
             borderchars: ['─', '│', '─', '│', '╭', '╮', '╯', '╰'],

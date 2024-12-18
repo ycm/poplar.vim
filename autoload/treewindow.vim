@@ -25,15 +25,15 @@ export class TreeWindow extends basewindow.BaseWindow
 
     def _SpecificFilter(key: string): bool
         if this._show_modify_mode
-            if key == 'm'
-                inputline.Open('ABCDEFGH', 'title',
+            if key == 'm' # <TODO>
+                inputline.Open('ABCDEFGH', 'rename',
                                this._CallbackInputLineEnter,
                                this.ToggleModifyMode)
                 return true
             endif
             return true
         endif
-        if key ==? '<cr>' # <DONE>
+        if key ==? '<cr>'
             var idx = this._id->getcurpos()[1] - 1
             var node = this._tree.GetNodeAtDisplayIndex(idx)
             if node.path->isdirectory()
@@ -43,23 +43,26 @@ export class TreeWindow extends basewindow.BaseWindow
                 execute $'drop {node.path->fnamemodify(':~:.')}'
                 return this._CallbackExit()
             endif
-        elseif key == 'I' # <DONE>
+        elseif key == 'I'
             this._tree.ToggleHidden()
             this.SetLines(this._tree.GetPrettyFormatLines())
-        elseif key == 'm' # <TODO>
+        elseif key == 'm'
             this.ToggleModifyMode()
-        elseif key == 'u' # <DONE>
+        elseif key == 'u'
             this._tree.RaiseRoot()
             this.SetLines(this._tree.GetPrettyFormatLines())
-        elseif key == 'c' # <TODO>
+        elseif key == 'c'
             var idx = this._id->getcurpos()[1] - 1
             var node = this._tree.GetNodeAtDisplayIndex(idx)
             this._tree.ChangeRoot(node)
             this.SetLines(this._tree.GetPrettyFormatLines())
+        elseif key == 'C'
+            this._tree.ResetRootToCwd()
+            this.SetLines(this._tree.GetPrettyFormatLines())
         elseif key == 'R'
             this._tree.HardRefresh()
             this.SetLines(this._tree.GetPrettyFormatLines())
-        elseif ['i', 't', 'v']->index(key) >= 0 # <DONE>
+        elseif ['i', 't', 'v']->index(key) >= 0
             var idx = this._id->getcurpos()[1] - 1
             var node = this._tree.GetNodeAtDisplayIndex(idx)
             if !node.path->isdirectory()

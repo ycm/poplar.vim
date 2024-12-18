@@ -11,12 +11,14 @@ export const K_IGNORE = [
 ]
 
 export const PROPS = {
-    # name: [prop, default, fallback]
     TreeDir:      ['prop_poplar_tree_dir',       'NERDTreeDir',      'Directory'],
+    TreeCWD:      ['prop_poplar_tree_cwd',       'Keyword',          'Keyword'],
     TreeFile:     ['prop_poplar_tree_file',      'NERDTreeFile',     'Identifier'],
     TreeExecFile: ['prop_poplar_tree_exec_file', 'NERDTreeExecFile', 'Keyword'],
     InputText:    ['prop_poplar_input_text',     'Normal',           'Normal'],
     InputCursor:  ['prop_poplar_input_cursor',   'PoplarInv',        'PoplarInv'],
+    HelpText:     ['prop_poplar_help_text',      'Comment',          'Comment'],
+    HelpKey:      ['prop_poplar_help_key',       'Keyword',          'Keyword'],
 }
 
-export const MODIFY_TEXT = '(modify)'
+export const MODIFY_TEXT = '(modify-mode)'

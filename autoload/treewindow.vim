@@ -12,6 +12,7 @@ export class TreeWindow extends basewindow.BaseWindow
             this._CallbackExit)
         this._tree = filetree.FileTree.new(getcwd())
         this._tree.ToggleDir(this._tree.root)
+        this._InitHelpText()
     enddef
 
 
@@ -35,6 +36,12 @@ export class TreeWindow extends basewindow.BaseWindow
         endif
         if key ==? '<cr>'
             var idx = this._id->getcurpos()[1] - 1
+            if this._show_help
+                idx -= this._helptext->len()
+            endif
+            if idx < 0
+                return true
+            endif
             var node = this._tree.GetNodeAtDisplayIndex(idx)
             if node.path->isdirectory()
                 this._tree.ToggleDir(node)
@@ -64,12 +71,21 @@ export class TreeWindow extends basewindow.BaseWindow
             this.SetLines(this._tree.GetPrettyFormatLines())
         elseif ['i', 't', 'v']->index(key) >= 0
             var idx = this._id->getcurpos()[1] - 1
+            if this._show_help
+                idx += this._helptext->len()
+            endif
+            if idx < 0
+                return true
+            endif
             var node = this._tree.GetNodeAtDisplayIndex(idx)
             if !node.path->isdirectory()
                 var cmd = {'i': 'split', 'v': 'vsplit', 't': 'tab drop'}
                 execute $'{cmd[key]} {node.path->fnamemodify(':~:.')}'
                 return this._CallbackExit()
             endif
+        elseif key == '?'
+            this._show_help = !this._show_help
+            this.SetLines(this._lines)
         endif
         return true
     enddef
@@ -77,6 +93,26 @@ export class TreeWindow extends basewindow.BaseWindow
 
     def _CallbackInputLineEnter(text: string)
         echom $'placeholder: received <{text}>'
+    enddef
+
+
+    def _InitHelpText()
+        this._helptext = [
+            this._FmtHelp('toggle help', '?'),
+            this._FmtHelp('exit poplar', '<esc>'),
+            this._FmtHelp('open/expand', '<cr>'),
+            this._FmtHelp('open in split', 'i'),
+            this._FmtHelp('open in vsplit', 'v'),
+            this._FmtHelp('open in tab', 't'),
+            this._FmtHelp('raise root by one dir', 'u'),
+            this._FmtHelp('set dir as root', 'c'),
+            this._FmtHelp('set cwd as root', 'C'),
+            this._FmtHelp('refresh', 'R'),
+            this._FmtHelp('show/hide hidden files', 'I'),
+            this._FmtHelp('-- MODIFY MODE --'),
+            this._FmtHelp('enter modify mode', 'm'),
+            {}
+        ]
     enddef
 
 endclass

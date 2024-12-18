@@ -9,6 +9,10 @@ class FileTreeNode # {{{
 
 endclass # }}}
 
+# delete()
+# mkdir()
+# rename()
+# {fname}->writefile([])
 
 export class FileTree
     var root: FileTreeNode # not necessarily cwd
@@ -99,15 +103,21 @@ export class FileTree
         endif
         var indent = '  '->repeat(depth)
         if node.path->isdirectory()
+            var dir_prop = node.path ==? getcwd()
+                    ? 'prop_poplar_tree_cwd'
+                    : 'prop_poplar_tree_dir'
+            var dirname = node.path ==? getcwd()
+                    ? node.path
+                    : tail
             if this._expanded_paths->has_key(node.path)
                 this._text_list->add(this._FormatWithProp(
-                    $'▾ {tail}/', 'prop_poplar_tree_dir', depth))
+                    $'▾ {dirname}/', dir_prop, depth))
                 for child in node.children
                     this._PrettyFormatLineRecur(child, depth + 1)
                 endfor
             else
                 this._text_list->add(this._FormatWithProp(
-                    $'▸ {tail}/', 'prop_poplar_tree_dir', depth))
+                    $'▸ {dirname}/', dir_prop, depth))
             endif
         elseif node.path->executable()
             this._text_list->add(this._FormatWithProp(
@@ -156,7 +166,6 @@ export class FileTree
                     ->glob(true, true)
                     ->filter((_, p) => p !~ '.*/\.\+$')
                     + $'{fmt_path}*'->glob(true, true)
-
             var dirs = listings
                     ->copy()
                     ->filter((_, p) => p->isdirectory())

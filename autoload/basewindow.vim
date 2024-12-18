@@ -10,6 +10,8 @@ export class BaseWindow
     var _lines: list<any> = ['nothing to show!']
     var _CallbackSwitchFocus: func(): bool
     var _CallbackExit: func(): bool
+    var _helptext: list<dict<any>>
+    var _show_help = false
     var savestate: dict<any> = null_dict
 
     def _GetCommonPopupProps(): dict<any> # {{{
@@ -49,7 +51,8 @@ export class BaseWindow
                 return this._CallbackExit()
             endif
         elseif !this._show_modify_mode && key_norm == 'j'
-            if this._id->getcurpos()[1] >= this._lines->len()
+            var disp_len = this._show_help ? this._helptext->len() + this._lines->len() : this._lines->len()
+            if this._id->getcurpos()[1] >= disp_len
                 return true
             endif
             return this._id->popup_filter_menu(key)
@@ -66,12 +69,12 @@ export class BaseWindow
     enddef # }}}
 
 
-    def ToggleModifyMode()
+    def ToggleModifyMode() # {{{
         var title = this._id->popup_getoptions().title
         if this._show_modify_mode
             this._show_modify_mode = false
             this._id->popup_setoptions({
-                title: title[: -(CONSTANTS.MODIFY_TEXT->len()) - 2],
+                title: title[: -(CONSTANTS.MODIFY_TEXT->strcharlen()) - 2],
                 highlight: 'Normal',
             })
         else
@@ -81,7 +84,7 @@ export class BaseWindow
                 highlight: 'Keyword',
             })
         endif
-    enddef
+    enddef # }}}
 
 
     def Open(title: string = ' no title ') # {{{
@@ -113,10 +116,15 @@ export class BaseWindow
     enddef # }}}
 
 
-    def SetLines(new_lines: list<any>) # {{{
+    def SetLines(new_lines: list<any>) # <TODO> eventually, list<dict<any>> # {{{
         var curr_line = this._id->getcurpos()[1]
         var new_len = new_lines->len()
-        this._id->popup_settext(new_lines)
+        if this._show_help
+            this._id->popup_settext(this._helptext + new_lines)
+            new_len += this._helptext->len()
+        else
+            this._id->popup_settext(new_lines)
+        endif
         this._lines = new_lines
         if curr_line > new_len
             var new_lnum = [curr_line, new_len]->min()
@@ -124,6 +132,24 @@ export class BaseWindow
             $':noa call cursor({new_lnum}, 1)'->win_execute(this._id)
             this._id->popup_setoptions({firstline: new_fline})
         endif
+    enddef # }}}
+
+
+    def _FmtHelp(annot: string, key: string = ''): dict<any> # {{{
+        if key == ''
+            return {
+                text: annot,
+                props: [{col: 1, length: annot->len(), type: 'prop_poplar_help_text'}]
+            }
+        endif
+        return {
+            text: $'{key}: {annot}',
+            props: [
+                {col: 1, length: key->len(), type: 'prop_poplar_help_key'},
+                {col: 1 + key->len(), length: 2 + annot->len(),
+                type: 'prop_poplar_help_text'}
+            ]
+        }
     enddef # }}}
 
 endclass

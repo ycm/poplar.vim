@@ -6,21 +6,23 @@ import './constants.vim' as CONSTANTS
 export class BaseWindow
     var _id = -1
     var _on_left: bool
+    var _show_modify_mode = false
     var _lines: list<any> = ['nothing to show!']
     var _CallbackSwitchFocus: func(): bool
     var _CallbackExit: func(): bool
     var savestate: dict<any> = null_dict
 
     def _GetCommonPopupProps(): dict<any> # {{{
-        var true_height = [&lines - 6, CONSTANTS.MAX_HEIGHT]->min()
+        var maxheight = [&lines - 8, 0]->max()
         var props = {
             pos: 'topleft',
-            col: &columns / 2 + 1,
-            line: (&lines - true_height) / 2 - 1,
+            col: &columns / 2 + 2,
+            # line: (&lines - maxheight) / 2 - 1, # <TODO> reflect true height here
             firstline: this.savestate->get('firstline', 1),
             minwidth: CONSTANTS.MIN_WIDTH,
-            minheight: true_height,
-            maxheight: true_height,
+            maxwidth: (&columns / 2) - 8,
+            minheight: maxheight / 2, # <TODO> fix this logic
+            maxheight: maxheight,
             filter: this._BaseFilter,
             border: [],
             borderchars: ['─', '│', '─', '│', '╭', '╮', '╯', '╰'],
@@ -40,23 +42,46 @@ export class BaseWindow
     def _BaseFilter(id: number, key: string): bool # {{{
         var key_norm = key->keytrans()
         if key_norm ==? '<esc>'
-            return this._CallbackExit()
-        elseif key_norm == 'j'
+            if this._show_modify_mode
+                this.ToggleModifyMode()
+                return true
+            else
+                return this._CallbackExit()
+            endif
+        elseif !this._show_modify_mode && key_norm == 'j'
             if this._id->getcurpos()[1] >= this._lines->len()
                 return true
             endif
             return this._id->popup_filter_menu(key)
-        elseif key_norm == 'k'
+        elseif !this._show_modify_mode && key_norm == 'k'
             if this._id->getcurpos()[1] <= 1
                 return true
             endif
             return this._id->popup_filter_menu(key)
-        elseif (key_norm == 'h' && !this._on_left)
-            || (key_norm == 'l' && this._on_left)
+        elseif (!this._show_modify_mode && key_norm == 'h' && !this._on_left)
+            || (!this._show_modify_mode && key_norm == 'l' && this._on_left)
             return this._CallbackSwitchFocus()
         endif
         return this._SpecificFilter(key_norm)
     enddef # }}}
+
+
+    def ToggleModifyMode()
+        var title = this._id->popup_getoptions().title
+        if this._show_modify_mode
+            this._show_modify_mode = false
+            this._id->popup_setoptions({
+                title: title[: -(CONSTANTS.MODIFY_TEXT->len()) - 2],
+                highlight: 'Normal',
+            })
+        else
+            this._show_modify_mode = true
+            this._id->popup_setoptions({
+                title: $'{title}{CONSTANTS.MODIFY_TEXT} ',
+                highlight: 'Keyword',
+            })
+        endif
+    enddef
 
 
     def Open(title: string = ' no title ') # {{{

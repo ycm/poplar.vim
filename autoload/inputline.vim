@@ -9,14 +9,19 @@ import './constants.vim' as CONSTANTS
 
 export def Open(starting_text: string,
                 title: string = 'title',
-                CallbackEnter: func(string) = null_function)
-    g:poplar.input.text = starting_text
-    g:poplar.input.CallbackEnter = CallbackEnter
+                CallbackEnter: func(string) = null_function,
+                CallbackExit: func(): void = null_function)
+    var tinfo = g:poplar.tree_win.GetId()->popup_getpos()
+    var pinfo = g:poplar.pin_win.GetId()->popup_getpos()
+    var width = tinfo.width + pinfo.width
+            + tinfo.scrollbar + pinfo.scrollbar - 4
+    var line = tinfo.line + [tinfo.height, pinfo.height]->max() - 1
     g:poplar.input = {
         text: starting_text,
         cursor: starting_text->strcharlen(),
         CallbackEnter: CallbackEnter,
-        width: 25, # <TODO> don't leave this
+        CallbackExit: CallbackExit,
+        width: width,
         xoffset: 0,
         ispaste: false,
         pastestr: '',
@@ -29,9 +34,11 @@ export def Open(starting_text: string,
         maxwidth: g:poplar.input.width,
         minheight: 1,
         maxheight: 1,
+        col: tinfo.col,
+        line: line,
         padding: [0, 1, 0, 1],
         border: [],
-        borderchars: ['─', '│', '─', '│', '╭', '╮', '╯', '╰'],
+        borderchars: ['─', '│', '─', '│', '├', '┤', '╯', '╰'],
         mapping: false,
         filter: ConsumeKey,
     })
@@ -117,6 +124,7 @@ enddef
 def FilterNonPrintable(key: string): bool
     if key ==? '<esc>'
         g:poplar.input.id->popup_close()
+        g:poplar.input.CallbackExit()
         g:poplar.input->filter((_, _) => false) # clear dict
         return true
     elseif key ==? '<pastestart>'
@@ -132,6 +140,7 @@ def FilterNonPrintable(key: string): bool
     elseif key ==? '<cr>'
         g:poplar.input.CallbackEnter(g:poplar.input.text)
         g:poplar.input.id->popup_close()
+        g:poplar.input.CallbackExit()
         g:poplar.input->filter((_, _) => false) # clear dict
         return true
     elseif CONSTANTS.K_IGNORE->index(key) >= 0

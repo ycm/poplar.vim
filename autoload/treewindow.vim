@@ -24,6 +24,15 @@ export class TreeWindow extends basewindow.BaseWindow
 
 
     def _SpecificFilter(key: string): bool
+        if this._show_modify_mode
+            if key == 'm'
+                inputline.Open('ABCDEFGH', 'title',
+                               this._CallbackInputLineEnter,
+                               this.ToggleModifyMode)
+                return true
+            endif
+            return true
+        endif
         if key ==? '<cr>' # <DONE>
             var idx = this._id->getcurpos()[1] - 1
             var node = this._tree.GetNodeAtDisplayIndex(idx)
@@ -38,7 +47,7 @@ export class TreeWindow extends basewindow.BaseWindow
             this._tree.ToggleHidden()
             this.SetLines(this._tree.GetPrettyFormatLines())
         elseif key == 'm' # <TODO>
-           inputline.Open('ABCDEFGH', 'title', this._CallbackInputLineEnter)
+            this.ToggleModifyMode()
         elseif key == 'u' # <DONE>
             this._tree.RaiseRoot()
             this.SetLines(this._tree.GetPrettyFormatLines())

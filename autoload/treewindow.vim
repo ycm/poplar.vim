@@ -25,13 +25,18 @@ export class TreeWindow extends basewindow.BaseWindow
         var idx = this._show_help
                 ? this._id->getcurpos()[1] - 1 - this._helptext->len()
                 : this._id->getcurpos()[1] - 1
-        if this._show_modify_mode
-            if key == 'm' # <TODO>
-                inputline.Open('ABCDEFGH', 'rename',
-                               this._CallbackInputLineEnter,
+        if idx >= 0 && this._show_modify_mode
+            var node = this._tree.GetNodeAtDisplayIndex(idx)
+            if key == 'a'
+                var starting_text = node.path->isdirectory()
+                        ? $'{node.path}/'
+                        : $"{node.path->fnamemodify(':h')}/"
+                inputline.Open(starting_text,
+                               'add a node (dirs end with /)',
+                               this._CallbackInputLineAddNode,
                                this.ToggleModifyMode)
             endif
-        elseif idx >= 0 && key ==? '<cr>'
+        elseif idx >= 0 && key ==? '<cr>' # ------------------------------ {{{
             var node = this._tree.GetNodeAtDisplayIndex(idx)
             if node.path->isdirectory()
                 this._tree.ToggleDir(node)
@@ -74,7 +79,7 @@ export class TreeWindow extends basewindow.BaseWindow
             else
                 var lnum = [1, this._id->getcurpos()[1] - this._helptext->len()]->max()
                 $':noa call cursor({lnum}, 1)'->win_execute(this._id)
-            endif
+            endif # ------------------------------------------------------ }}}
         endif
         return true
     enddef
@@ -85,7 +90,26 @@ export class TreeWindow extends basewindow.BaseWindow
     enddef
 
 
-    def _InitHelpText()
+    def _CallbackInputLineAddNode(path: string) # {{{
+        var trimmed = path->trim()
+        if trimmed[-1] == '/'
+            mkdir(trimmed, 'p')
+            echomsg $'[poplar] created directory: {trimmed}.'
+        elseif trimmed->filereadable()
+            echohl ErrorMsg
+            echomsg $'[poplar] {trimmed} exists already.'
+            echohl None
+            return
+        else
+            []->writefile(trimmed, 'a')
+            echomsg $'[poplar] created file: {trimmed}.'
+        endif
+        this._tree.HardRefresh()
+        this.SetLines(this._tree.GetPrettyFormatLines())
+    enddef # }}}
+
+
+    def _InitHelpText() # {{{
         this._helptext = [
             this._FmtHelp('toggle help', '?'),
             this._FmtHelp('exit poplar', '<esc>'),
@@ -98,10 +122,13 @@ export class TreeWindow extends basewindow.BaseWindow
             this._FmtHelp('set cwd as root', 'C'),
             this._FmtHelp('refresh', 'R'),
             this._FmtHelp('show/hide hidden files', 'I'),
-            this._FmtHelp('-- MODIFY MODE --'),
             this._FmtHelp('enter modify mode', 'm'),
+            this._FmtHelp('---- MODIFY MODE ----'),
+            this._FmtHelp('add file/dir', 'a'),
+            this._FmtHelp('delete file/dir', 'd'),
+            this._FmtHelp('move/rename', 'm'),
             {}
         ]
-    enddef
+    enddef # }}}
 
 endclass

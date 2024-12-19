@@ -7,6 +7,8 @@ vim9script
 import autoload '../autoload/poplar.vim'
 
 hi! PoplarInv cterm=inverse gui=inverse
+hi! link PmenuSel CursorLine
+hi! link PmenuThumb CursorLine
 g:poplar = {input: {}}
 
 command! Poplar poplar.Run()

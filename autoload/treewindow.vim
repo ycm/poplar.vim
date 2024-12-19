@@ -33,12 +33,11 @@ export class TreeWindow extends basewindow.BaseWindow
                         : $"{node.path->fnamemodify(':h')}/"
                 inputline.Open(starting_text,
                                'add a node (dirs end with /)',
-                               this._CallbackInputLineAddNode,
+                               this._CallbackAddNode,
                                this.ToggleModifyMode)
             elseif key == 'm'
-                inputline.Open(node.path,
-                               'move/rename node',
-                               function(this._CallbackInputLineRenameNode, [node.path]),
+                inputline.Open(node.path, 'move/rename node',
+                               function(this._CallbackMoveNode, [node.path]),
                                this.ToggleModifyMode)
             endif
         elseif idx >= 0 && key ==? '<cr>' # ------------------------------ {{{
@@ -87,7 +86,9 @@ export class TreeWindow extends basewindow.BaseWindow
             if this._show_help
                 ':noa call cursor(1, 1)'->win_execute(this._id)
             else
-                var lnum = [1, this._id->getcurpos()[1] - this._helptext->len()]->max()
+                var lnum = [
+                    1, this._id->getcurpos()[1] - this._helptext->len()
+                ]->max()
                 $':noa call cursor({lnum}, 1)'->win_execute(this._id)
             endif # ------------------------------------------------------ }}}
         endif
@@ -100,7 +101,7 @@ export class TreeWindow extends basewindow.BaseWindow
     enddef
 
 
-    def _CallbackInputLineRenameNode(from: string, to: string)
+    def _CallbackMoveNode(from: string, to: string) # {{{
         var dest = to->trim()
         if from->isdirectory()
             # <TODO>
@@ -127,10 +128,10 @@ export class TreeWindow extends basewindow.BaseWindow
         endif
         this._tree.HardRefresh()
         this.SetLines(this._tree.GetPrettyFormatLines())
-    enddef
+    enddef # }}}
 
 
-    def _CallbackInputLineAddNode(path: string) # {{{
+    def _CallbackAddNode(path: string) # {{{
         var trimmed = path->trim()
         if trimmed[-1] == '/'
             try

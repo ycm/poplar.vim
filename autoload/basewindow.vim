@@ -51,7 +51,9 @@ export class BaseWindow
                 return this._CallbackExit()
             endif
         elseif !this._show_modify_mode && key_norm == 'j'
-            var disp_len = this._show_help ? this._helptext->len() + this._lines->len() : this._lines->len()
+            var disp_len = this._show_help
+                    ? this._helptext->len() + this._lines->len()
+                    : this._lines->len()
             if this._id->getcurpos()[1] >= disp_len
                 return true
             endif
@@ -97,7 +99,8 @@ export class BaseWindow
         this._id = lines->popup_create(opts)
 
         if this.savestate->has_key('_curpos')
-            $':noa call cursor({this.savestate._curpos}, 1)'->win_execute(this._id)
+            $':noa call cursor({this.savestate._curpos}, 1)'
+                    ->win_execute(this._id)
         endif
     enddef # }}}
 
@@ -131,7 +134,9 @@ export class BaseWindow
         this._lines = new_lines
         if curr_line > new_len
             var new_lnum = [curr_line, new_len]->min()
-            var new_fline = [1, new_len - this._id->popup_getoptions().minheight + 1]->max()
+            var new_fline = [
+                1, new_len - this._id->popup_getoptions().minheight + 1
+            ]->max()
             if move_cursor
                 $':noa call cursor({new_lnum}, 1)'->win_execute(this._id)
             endif
@@ -144,7 +149,8 @@ export class BaseWindow
         if key == ''
             return {
                 text: annot,
-                props: [{col: 1, length: annot->len(), type: 'prop_poplar_help_text'}]
+                props: [{col: 1, length: annot->len(),
+                        type: 'prop_poplar_help_text'}]
             }
         endif
         return {
@@ -158,15 +164,15 @@ export class BaseWindow
     enddef # }}}
 
 
-    def _Log(msg: string)
+    def _Log(msg: string) # {{{
         echomsg $'[poplar] {msg}'
-    enddef
+    enddef # }}}
 
 
-    def _LogErr(err: string)
+    def _LogErr(err: string) # {{{
         echohl ErrorMsg
         this._Log(err)
         echohl None
-    enddef
+    enddef # }}}
 
 endclass

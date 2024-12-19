@@ -85,7 +85,13 @@ export class TreeWindow extends basewindow.BaseWindow
             endif
         elseif key == '?'
             this._show_help = !this._show_help
-            this.SetLines(this._lines)
+            this.SetLines(this._lines, false)
+            if this._show_help
+                ':noa call cursor(1, 1)'->win_execute(this._id)
+            else
+                var lnum = [1, this._id->getcurpos()[1] - this._helptext->len()]->max()
+                $':noa call cursor({lnum}, 1)'->win_execute(this._id)
+            endif
         endif
         return true
     enddef

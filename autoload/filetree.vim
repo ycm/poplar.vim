@@ -98,7 +98,7 @@ export class FileTree
 
     def _PrettyFormatLineRecur(node: FileTreeNode, depth: number)
         var tail = node.path->fnamemodify(':t')
-        if !this._show_hidden && tail[0] == '.'
+        if !this._show_hidden && tail[0] == '.' && node.path != getcwd()
             return
         endif
         var indent = '  '->repeat(depth)
@@ -134,7 +134,7 @@ export class FileTree
         var found: FileTreeNode = null_object
         def GetNodeRecur(node: FileTreeNode)
             if ct <= idx
-                if !this._show_hidden && node.path->fnamemodify(':t')[0] == '.'
+                if !this._show_hidden && node.path->fnamemodify(':t')[0] == '.' && node.path != getcwd()
                     return
                 endif
                 ct += 1

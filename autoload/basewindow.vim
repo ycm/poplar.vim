@@ -91,7 +91,10 @@ export class BaseWindow
         var opts = this._GetCommonPopupProps()
         opts.title = title
         opts->extend(this.savestate)
-        this._id = this._lines->popup_create(opts)
+        var lines = this._show_help
+                ? this._helptext + this._lines
+                : this._lines
+        this._id = lines->popup_create(opts)
 
         if this.savestate->has_key('_curpos')
             $':noa call cursor({this.savestate._curpos}, 1)'->win_execute(this._id)
@@ -116,7 +119,7 @@ export class BaseWindow
     enddef # }}}
 
 
-    def SetLines(new_lines: list<any>) # <TODO> eventually, list<dict<any>> # {{{
+    def SetLines(new_lines: list<any>, move_cursor: bool = true) # <TODO> eventually, list<dict<any>> # {{{
         var curr_line = this._id->getcurpos()[1]
         var new_len = new_lines->len()
         if this._show_help
@@ -129,7 +132,9 @@ export class BaseWindow
         if curr_line > new_len
             var new_lnum = [curr_line, new_len]->min()
             var new_fline = [1, new_len - this._id->popup_getoptions().minheight + 1]->max()
-            $':noa call cursor({new_lnum}, 1)'->win_execute(this._id)
+            if move_cursor
+                $':noa call cursor({new_lnum}, 1)'->win_execute(this._id)
+            endif
             this._id->popup_setoptions({firstline: new_fline})
         endif
     enddef # }}}

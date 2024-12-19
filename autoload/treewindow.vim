@@ -17,31 +17,21 @@ export class TreeWindow extends basewindow.BaseWindow
 
 
     def InitLines()
-        if !this.savestate->empty()
-            throw $'fatal: tried InitLines() on existing tree'
-        endif
         this.SetLines(this._tree.GetPrettyFormatLines())
     enddef
 
 
     def _SpecificFilter(key: string): bool
+        var idx = this._show_help
+                ? this._id->getcurpos()[1] - 1 - this._helptext->len()
+                : this._id->getcurpos()[1] - 1
         if this._show_modify_mode
             if key == 'm' # <TODO>
                 inputline.Open('ABCDEFGH', 'rename',
                                this._CallbackInputLineEnter,
                                this.ToggleModifyMode)
-                return true
             endif
-            return true
-        endif
-        if key ==? '<cr>'
-            var idx = this._id->getcurpos()[1] - 1
-            if this._show_help
-                idx -= this._helptext->len()
-            endif
-            if idx < 0
-                return true
-            endif
+        elseif idx >= 0 && key ==? '<cr>'
             var node = this._tree.GetNodeAtDisplayIndex(idx)
             if node.path->isdirectory()
                 this._tree.ToggleDir(node)
@@ -50,18 +40,25 @@ export class TreeWindow extends basewindow.BaseWindow
                 execute $'drop {node.path->fnamemodify(':~:.')}'
                 return this._CallbackExit()
             endif
+        elseif idx >= 0 && ['i', 't', 'v']->index(key) >= 0
+            var node = this._tree.GetNodeAtDisplayIndex(idx)
+            if !node.path->isdirectory()
+                var cmd = {'i': 'split', 'v': 'vsplit', 't': 'tab drop'}
+                execute $'{cmd[key]} {node.path->fnamemodify(':~:.')}'
+                return this._CallbackExit()
+            endif
+        elseif idx >= 0 && key == 'm'
+            this.ToggleModifyMode()
+        elseif idx >= 0 && key == 'c'
+            var node = this._tree.GetNodeAtDisplayIndex(idx)
+            this._tree.ChangeRoot(node)
+            this.SetLines(this._tree.GetPrettyFormatLines())
         elseif key == 'I'
             this._tree.ToggleHidden()
             this.SetLines(this._tree.GetPrettyFormatLines())
-        elseif key == 'm'
-            this.ToggleModifyMode()
         elseif key == 'u'
             this._tree.RaiseRoot()
-            this.SetLines(this._tree.GetPrettyFormatLines())
-        elseif key == 'c'
-            var idx = this._id->getcurpos()[1] - 1
-            var node = this._tree.GetNodeAtDisplayIndex(idx)
-            this._tree.ChangeRoot(node)
+            this._tree.HardRefresh()
             this.SetLines(this._tree.GetPrettyFormatLines())
         elseif key == 'C'
             this._tree.ResetRootToCwd()
@@ -69,20 +66,6 @@ export class TreeWindow extends basewindow.BaseWindow
         elseif key == 'R'
             this._tree.HardRefresh()
             this.SetLines(this._tree.GetPrettyFormatLines())
-        elseif ['i', 't', 'v']->index(key) >= 0
-            var idx = this._id->getcurpos()[1] - 1
-            if this._show_help
-                idx += this._helptext->len()
-            endif
-            if idx < 0
-                return true
-            endif
-            var node = this._tree.GetNodeAtDisplayIndex(idx)
-            if !node.path->isdirectory()
-                var cmd = {'i': 'split', 'v': 'vsplit', 't': 'tab drop'}
-                execute $'{cmd[key]} {node.path->fnamemodify(':~:.')}'
-                return this._CallbackExit()
-            endif
         elseif key == '?'
             this._show_help = !this._show_help
             this.SetLines(this._lines, false)

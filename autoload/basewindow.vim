@@ -157,4 +157,16 @@ export class BaseWindow
         }
     enddef # }}}
 
+
+    def _Log(msg: string)
+        echomsg $'[poplar] {msg}'
+    enddef
+
+
+    def _LogErr(err: string)
+        echohl ErrorMsg
+        this._Log(err)
+        echohl None
+    enddef
+
 endclass

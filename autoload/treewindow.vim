@@ -35,6 +35,11 @@ export class TreeWindow extends basewindow.BaseWindow
                                'add a node (dirs end with /)',
                                this._CallbackInputLineAddNode,
                                this.ToggleModifyMode)
+            elseif key == 'm'
+                inputline.Open(node.path,
+                               'move/rename node',
+                               function(this._CallbackInputLineRenameNode, [node.path]),
+                               this.ToggleModifyMode)
             endif
         elseif idx >= 0 && key ==? '<cr>' # ------------------------------ {{{
             var node = this._tree.GetNodeAtDisplayIndex(idx)
@@ -53,7 +58,12 @@ export class TreeWindow extends basewindow.BaseWindow
                 return this._CallbackExit()
             endif
         elseif idx >= 0 && key == 'm'
-            this.ToggleModifyMode()
+            var node = this._tree.GetNodeAtDisplayIndex(idx)
+            if node.path->isdirectory() && node.path == getcwd()
+                this._LogErr('cannot modify cwd.')
+            else
+                this.ToggleModifyMode()
+            endif
         elseif idx >= 0 && key == 'c'
             var node = this._tree.GetNodeAtDisplayIndex(idx)
             this._tree.ChangeRoot(node)
@@ -86,23 +96,60 @@ export class TreeWindow extends basewindow.BaseWindow
 
 
     def _CallbackInputLineEnter(text: string)
-        echom $'placeholder: received <{text}>'
+        this._Log($'placeholder received <{text}>')
+    enddef
+
+
+    def _CallbackInputLineRenameNode(from: string, to: string)
+        var dest = to->trim()
+        if from->isdirectory()
+            # <TODO>
+        elseif dest->filereadable()
+            this._LogErr($'file already exists: {dest}.')
+        else
+            if dest[-1] == '/'
+                try
+                    mkdir(dest, 'p')
+                catch /E739/
+                endtry
+                dest = dest .. from->fnamemodify(':t')
+            else
+                try
+                    mkdir(dest->fnamemodify(':h'))
+                catch /E739/
+                endtry
+            endif
+            if rename(from, $'{dest}') == -1
+                this._LogErr($'failed to move file to {dest}.')
+            else
+                this._Log($'moved file to {dest}.')
+            endif
+        endif
+        this._tree.HardRefresh()
+        this.SetLines(this._tree.GetPrettyFormatLines())
     enddef
 
 
     def _CallbackInputLineAddNode(path: string) # {{{
         var trimmed = path->trim()
         if trimmed[-1] == '/'
-            mkdir(trimmed, 'p')
-            echomsg $'[poplar] created directory: {trimmed}.'
+            try
+                mkdir(trimmed, 'p')
+                this._Log($'created directory: {trimmed}.')
+            catch /E739/
+                this._LogErr($'failed to create directory: {trimmed} (E739).')
+            endtry
         elseif trimmed->filereadable()
-            echohl ErrorMsg
-            echomsg $'[poplar] {trimmed} exists already.'
-            echohl None
+            this._LogErr($'{trimmed} exists already.')
             return
         else
-            []->writefile(trimmed, 'a')
-            echomsg $'[poplar] created file: {trimmed}.'
+            try
+                []->writefile(trimmed, 'a')
+                this._Log($'created file: {trimmed}')
+            catch # privileged directory, etc.
+                this._LogErr($'failed to create file: {trimmed}.')
+        echom $'placeholder: received <{text}>'
+            endtry
         endif
         this._tree.HardRefresh()
         this.SetLines(this._tree.GetPrettyFormatLines())

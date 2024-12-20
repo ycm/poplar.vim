@@ -7,10 +7,12 @@ import './constants.vim' as CONSTANTS
 
 export class TreeWindow extends basewindow.BaseWindow
     var _tree: filetree.FileTree
+    var _pin_callbacks: dict<func>
 
     def new(this._on_left,
             this._CallbackSwitchFocus,
-            this._CallbackExit)
+            this._CallbackExit,
+            this._pin_callbacks)
         this._tree = filetree.FileTree.new(getcwd())
         this._tree.ToggleDir(this._tree.root)
         this._InitHelpText()
@@ -51,7 +53,7 @@ export class TreeWindow extends basewindow.BaseWindow
                     this.ToggleModifyMode()
                     return false
                 endif
-                inputline.Open('', $"delete {node.path}? 'yes' to confirm",
+                inputline.Open('', $"delete {node.path}? ('yes' to confirm)",
                                function(this._CallbackDeleteNode, [node.path]),
                                this.ToggleModifyMode)
             endif
@@ -64,17 +66,22 @@ export class TreeWindow extends basewindow.BaseWindow
                 execute $'drop {node.path->fnamemodify(':~:.')}'
                 return this._CallbackExit()
             endif
-        elseif idx >= 0 && [ # <TODO> separate this into three cases
-                    CONSTANTS.KEYS.TREE_OPEN_SPLIT,
-                    CONSTANTS.KEYS.TREE_OPEN_VSPLIT,
-                    CONSTANTS.KEYS.TREE_OPEN_TAB]->index(key) >= 0
+        elseif idx >= 0 && this._IsKey(key, CONSTANTS.KEYS.TREE_OPEN_SPLIT)
             var node = this._tree.GetNodeAtDisplayIndex(idx)
             if !node.path->isdirectory()
-                var cmd: dict<string> = {}
-                cmd[CONSTANTS.KEYS.TREE_OPEN_SPLIT] = 'split'
-                cmd[CONSTANTS.KEYS.TREE_OPEN_VSPLIT] = 'vsplit'
-                cmd[CONSTANTS.KEYS.TREE_OPEN_TAB] = 'tab drop'
-                execute $"{cmd[key]} {node.path->fnamemodify(':~:.')}"
+                execute $'split {node.path->fnamemodify(':~:.')}'
+                return this._CallbackExit()
+            endif
+        elseif idx >= 0 && this._IsKey(key, CONSTANTS.KEYS.TREE_OPEN_VSPLIT)
+            var node = this._tree.GetNodeAtDisplayIndex(idx)
+            if !node.path->isdirectory()
+                execute $'vsplit {node.path->fnamemodify(':~:.')}'
+                return this._CallbackExit()
+            endif
+        elseif idx >= 0 && this._IsKey(key, CONSTANTS.KEYS.TREE_OPEN_TAB)
+            var node = this._tree.GetNodeAtDisplayIndex(idx)
+            if !node.path->isdirectory()
+                execute $'tab drop {node.path->fnamemodify(':~:.')}'
                 return this._CallbackExit()
             endif
         elseif idx >= 0 && this._IsKey(key, CONSTANTS.KEYS.TREE_MODIFY_MODE)
@@ -83,6 +90,13 @@ export class TreeWindow extends basewindow.BaseWindow
             var node = this._tree.GetNodeAtDisplayIndex(idx)
             this._tree.ChangeRoot(node)
             this.SetLines(this._tree.GetPrettyFormatLines())
+        elseif idx >= 0 && this._IsKey(key, CONSTANTS.KEYS.TREE_TOGGLE_PIN)
+            var node = this._tree.GetNodeAtDisplayIndex(idx)
+            if !(node.path->filereadable())
+                this._LogErr($'cannot pin {node.path}')
+            else
+                this._pin_callbacks.TogglePin(node.path)
+            endif
         elseif this._IsKey(key, CONSTANTS.KEYS.TREE_TOGGLE_HIDDEN)
             this._tree.ToggleHidden()
             this.SetLines(this._tree.GetPrettyFormatLines())
@@ -139,6 +153,7 @@ export class TreeWindow extends basewindow.BaseWindow
                 else
                     this._Log($'deleted file {path} and removed {winids->len()} windows.')
                 endif
+                this._pin_callbacks.Refresh()
             else
                 this._LogErr($'could not delete file: {path}.')
             endif
@@ -160,12 +175,12 @@ export class TreeWindow extends basewindow.BaseWindow
             if rename(from, dest) == -1
                 this._LogErr($'failed to move directory {from}.')
             else
+                this._pin_callbacks.UpdateDir(from, dest)
                 var bufs = getbufinfo()
                         ->filter((_, b) => b.name =~ $'^{from}/')
                         ->mapnew((_, b) => [b.bufnr, b.name[from->len() + 1 :]])
                 var wins_replaced = 0
                 for [bufnr, basename] in bufs
-                    echomsg $'{bufnr}: is {basename}'
                     for winid in bufnr->win_findbuf()
                         $':noa | edit! {dest}{basename}'->win_execute(winid)
                         ++wins_replaced
@@ -196,6 +211,7 @@ export class TreeWindow extends basewindow.BaseWindow
             if rename(from, dest) == -1
                 this._LogErr($'failed to move file from {from} to {dest}.')
             else
+                this._pin_callbacks.UpdatePin(from, dest)
                 var winids = from->bufnr()->win_findbuf()
                 dest = dest->fnamemodify(':~:.')
                 for winid in winids
@@ -238,6 +254,7 @@ export class TreeWindow extends basewindow.BaseWindow
         endif
         this._tree.HardRefresh()
         this.SetLines(this._tree.GetPrettyFormatLines())
+        this._pin_callbacks.Refresh()
     enddef # }}}
 
 
@@ -256,7 +273,7 @@ export class TreeWindow extends basewindow.BaseWindow
             this._FmtHelp('refresh',                CONSTANTS.KEYS.TREE_REFRESH),
             this._FmtHelp('show/hide hidden files', CONSTANTS.KEYS.TREE_TOGGLE_HIDDEN),
             this._FmtHelp('yank full path',         CONSTANTS.KEYS.TREE_YANK_PATH), # <TODO>
-            this._FmtHelp('pin/unpin file',         CONSTANTS.KEYS.TREE_TOGGLE_PIN), # <TODO>
+            this._FmtHelp('pin/unpin file',         CONSTANTS.KEYS.TREE_TOGGLE_PIN),
             this._FmtHelp('enter modify mode',      CONSTANTS.KEYS.TREE_MODIFY_MODE),
             this._FmtHelp('---- MODIFY MODE ----'),
             this._FmtHelp('add file/dir',           CONSTANTS.KEYS.TREE_ADD_NODE),

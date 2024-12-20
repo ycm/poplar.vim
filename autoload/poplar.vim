@@ -23,11 +23,16 @@ for [key, val] in CONSTANTS.PROPS ->items()
 endfor # }}}
 
 export def Run()
-    if !g:poplar->has_key('tree_win')
-        g:poplar['tree_win'] = treewindow.TreeWindow.new(true, SwitchFocus, Exit)
-    endif
     if !g:poplar->has_key('pin_win')
         g:poplar['pin_win'] = pinwindow.PinWindow.new(false, SwitchFocus, Exit)
+    endif
+    if !g:poplar->has_key('tree_win')
+        g:poplar['tree_win'] = treewindow.TreeWindow.new(true, SwitchFocus, Exit, {
+            Refresh: g:poplar.pin_win.HardRefresh,
+            TogglePin: g:poplar.pin_win.CallbackTogglePin,
+            UpdatePin: g:poplar.pin_win.CallbackUpdatePin,
+            UpdateDir: g:poplar.pin_win.CallbackUpdateDir
+        })
     endif
 
     g:poplar.tree_win.Open(' poplar ')
@@ -43,7 +48,7 @@ export def Run()
             cursorline: false
         })
         g:poplar.tree_win.InitLines()
-        g:poplar.pin_win.InitLines()
+        g:poplar.pin_win.SoftRefresh()
     endif
 enddef
 

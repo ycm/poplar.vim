@@ -67,13 +67,13 @@ def UpdateText()
     # possible by setting the viewport's left edge to the lowest value for
     # which the cursor is displayed.
     if cur == txt->strcharlen()
-        xos = range(cur)
+        xos = cur->range()
                 ->filter((_, i) => $'{txt} '[i : cur]->strwidth() <= width)
                 ->min()
     # <INFO> OTOH if cursor is mid-text but to the right of the viewport,
     # increment the viewport's left edge until cursor is displayed
     elseif cur > xos
-            && cur > range(xos, 1 + txt->strcharlen())
+            && cur > xos->range(1 + txt->strcharlen())
                     ->filter((_, i) => txt[xos : i]->strwidth() <= width)
                     ->max()
         while xos <= cur && txt[xos : cur]->strwidth() > width

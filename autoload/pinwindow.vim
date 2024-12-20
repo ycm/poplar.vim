@@ -23,18 +23,70 @@ export class PinWindow extends basewindow.BaseWindow
         var paths = '.poplar.txt'->readfile()
         this._valid = []
         this._invalid = []
-
         for path in paths
-            path->filereadable()
-                    ? this._valid->add(path)
-                    : this._invalid->add(path)
+            if path->filereadable() && this._valid->index(path) < 0
+                this._valid->add(path->fnamemodify(':p'))
+            elseif !path->filereadable() && this._invalid->index(path) < 0
+                this._invalid->add(path->fnamemodify(':p'))
+            endif
         endfor
     enddef # }}}
 
 
-    def InitLines()
+    def HardRefresh()
+        this._RefreshPaths()
+        this.SoftRefresh()
+    enddef
+
+
+    def SoftRefresh()
         this.SetLines(this._FormatLines())
     enddef
+
+
+    def CallbackUpdateDir(from: string, to: string)
+        var oldpath = from->fnamemodify(':p')
+        var newpath = to->fnamemodify(':p')
+        if oldpath[-1] != '/'
+            oldpath = oldpath .. '/'
+        endif
+        if newpath[-1] != '/'
+            newpath = newpath .. '/'
+        endif
+        for i in this._valid->len()->range()
+            if this._valid[i] =~ $'^{oldpath}'
+                this._valid[i] = newpath .. this._valid[i][oldpath->strcharlen() :]
+            endif
+        endfor
+        this.HardRefresh()
+    enddef
+
+
+    def CallbackTogglePin(path: string)
+        if !path->filereadable()
+            return
+        endif
+        var p = path->fnamemodify(':p')
+        var shortp = p->fnamemodify(':~:.')
+        var idx = this._valid->index(p)
+        if idx >= 0
+            this._Log($"unpinned: {shortp}.")
+            this._valid->remove(idx)
+        else
+            this._valid->add(p)
+            this._Log($'pinned: {shortp}.')
+        endif
+        this.HardRefresh()
+    enddef
+
+
+    def CallbackUpdatePin(from: string, to: string) # {{{
+        var idx = this._valid->index(from->fnamemodify(':p'))
+        if idx >= 0
+            this._valid[idx] = to->fnamemodify(':p')
+        endif
+        this.HardRefresh()
+    enddef # }}}
 
 
     def Write() # {{{
@@ -108,7 +160,7 @@ export class PinWindow extends basewindow.BaseWindow
     enddef # }}}
 
 
-    def _SpecificFilter(key: string): bool
+    def _SpecificFilter(key: string): bool # {{{
         var idx = this._show_help
                 ? this._id->getcurpos()[1] - 1 - this._helptext->len()
                 : this._id->getcurpos()[1] - 1
@@ -118,7 +170,7 @@ export class PinWindow extends basewindow.BaseWindow
                 var path = info.valid
                         ? this._valid[info.idx]
                         : this._invalid[info.idx]
-                inputline.Open(path, 'modify',
+                inputline.Open(path, 'modify a pin',
                                function(this._CallbackRenamePin, [info.valid, info.idx]))
             endif
         elseif idx >= 0 && this._IsKey(key, CONSTANTS.KEYS.PIN_DELETE)
@@ -127,7 +179,7 @@ export class PinWindow extends basewindow.BaseWindow
                 var path = info.valid
                         ? this._valid[info.idx]
                         : this._invalid[info.idx]
-                inputline.Open('', $"unpin {path->fnamemodify(':~:.')}? 'yes' to confirm",
+                inputline.Open('', $"unpin {path->fnamemodify(':~:.')}? ('yes' to confirm)",
                                function(this._CallbackUnpin, [info.valid, info.idx]))
             endif
         elseif this._IsKey(key, CONSTANTS.KEYS.PIN_ADD)
@@ -140,7 +192,31 @@ export class PinWindow extends basewindow.BaseWindow
                             : this._invalid[info.idx]
                 endif
             endif
-            inputline.Open(text, 'add', this._CallbackPin)
+            inputline.Open(text, 'add a pin', this._CallbackPin)
+        elseif this._IsKey(key, CONSTANTS.KEYS.PIN_OPEN_SPLIT)
+            var info = this._GetPathIdxFromIdx(idx)
+            if info.idx >= 0
+                var path = info.valid
+                        ? this._valid[info.idx]
+                        : this._invalid[info.idx]
+                execute $"split {path->fnamemodify(':~:.')}"
+            endif
+        elseif this._IsKey(key, CONSTANTS.KEYS.PIN_OPEN_VSPLIT)
+            var info = this._GetPathIdxFromIdx(idx)
+            if info.idx >= 0
+                var path = info.valid
+                        ? this._valid[info.idx]
+                        : this._invalid[info.idx]
+                execute $"vsplit {path->fnamemodify(':~:.')}"
+            endif
+        elseif this._IsKey(key, CONSTANTS.KEYS.PIN_OPEN_TAB)
+            var info = this._GetPathIdxFromIdx(idx)
+            if info.idx >= 0
+                var path = info.valid
+                        ? this._valid[info.idx]
+                        : this._invalid[info.idx]
+                execute $"tab drop {path->fnamemodify(':~:.')}"
+            endif
         elseif idx >= 0 && this._IsKey(key, CONSTANTS.KEYS.PIN_MOVE_DOWN)
             var info = this._GetPathIdxFromIdx(idx)
             if info.valid && info.idx >= 0 && info.idx + 1 < this._valid->len()
@@ -152,7 +228,7 @@ export class PinWindow extends basewindow.BaseWindow
                     this._invalid[info.idx + 1], this._invalid[info.idx]]
                 'j'->feedkeys()
             endif
-            this.InitLines()
+            this.SoftRefresh()
         elseif idx >= 0 && this._IsKey(key, CONSTANTS.KEYS.PIN_MOVE_UP)
             var info = this._GetPathIdxFromIdx(idx)
             if info.valid && info.idx > 0 && this._valid->len() > 1
@@ -164,10 +240,9 @@ export class PinWindow extends basewindow.BaseWindow
                     this._invalid[info.idx - 1], this._invalid[info.idx]]
                 'k'->feedkeys()
             endif
-            this.InitLines()
+            this.SoftRefresh()
         elseif this._IsKey(key, CONSTANTS.KEYS.PIN_REFRESH)
-            this._Refresh()
-            this.InitLines()
+            this.HardRefresh()
         elseif this._IsKey(key, CONSTANTS.KEYS.PIN_TOGGLE_HELP)
             this._show_help = !this._show_help
             this.SetLines(this._lines, false)
@@ -181,17 +256,17 @@ export class PinWindow extends basewindow.BaseWindow
             endif
         endif
         return true
-    enddef
+    enddef # }}}
 
 
-    def _Refresh() # {{{
+    def _RefreshPaths() # {{{
         for path in this._invalid
-            if path->filereadable()
+            if path->filereadable() && this._valid->index(path) < 0
                 this._valid->add(path)
             endif
         endfor
         for path in this._valid
-            if !path->filereadable()
+            if !path->filereadable() && this._invalid->index(path) < 0
                 this._invalid->add(path)
             endif
         endfor
@@ -202,6 +277,11 @@ export class PinWindow extends basewindow.BaseWindow
 
     def _CallbackPin(path: string) # {{{
         var p = path->trim()
+        if p == ''
+            this._Log($'operation aborted.')
+            return
+        endif
+        p = p->fnamemodify(':p')
         if p->filereadable()
             if this._valid->index(p) >= 0
                 this._Log($'already pinned: {p}.')
@@ -217,7 +297,7 @@ export class PinWindow extends basewindow.BaseWindow
                 this._Log($'pinned an invalid file: {p}.')
             endif
         endif
-        this.InitLines()
+        this.SoftRefresh()
     enddef # }}}
 
 
@@ -257,7 +337,7 @@ export class PinWindow extends basewindow.BaseWindow
                 this._Log($'pinned an invalid file: {p}.')
             endif
         endif
-        this.InitLines()
+        this.SoftRefresh()
     enddef # }}}
 
 
@@ -273,7 +353,7 @@ export class PinWindow extends basewindow.BaseWindow
             this._Log($'unpinned: {this._invalid[idx]}')
             this._invalid->remove(idx)
         endif
-        this.InitLines()
+        this.SoftRefresh()
     enddef # }}}
 
 

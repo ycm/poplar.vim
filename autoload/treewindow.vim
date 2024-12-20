@@ -50,7 +50,7 @@ export class TreeWindow extends basewindow.BaseWindow
                     this.ToggleModifyMode()
                     return false
                 endif
-                inputline.Open('', $"delete {node.path}? enter 'yes' to confirm",
+                inputline.Open('', $"delete {node.path}? 'yes' to confirm",
                                function(this._CallbackDeleteNode, [node.path]),
                                this.ToggleModifyMode)
             endif
@@ -244,9 +244,10 @@ export class TreeWindow extends basewindow.BaseWindow
             this._FmtHelp('open in tab', 't'),
             this._FmtHelp('raise root by one dir', 'u'),
             this._FmtHelp('set dir as root', 'c'),
-            this._FmtHelp('set cwd as root', 'C'),
+            this._FmtHelp('reset cwd as root', 'C'),
             this._FmtHelp('refresh', 'R'),
             this._FmtHelp('show/hide hidden files', 'I'),
+            this._FmtHelp('yank full path', 'y'), # <TODO>
             this._FmtHelp('enter modify mode', 'm'),
             this._FmtHelp('---- MODIFY MODE ----'),
             this._FmtHelp('add file/dir', 'a'),

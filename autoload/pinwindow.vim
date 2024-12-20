@@ -108,7 +108,7 @@ export class PinWindow extends basewindow.BaseWindow
         var idx = this._show_help
                 ? this._id->getcurpos()[1] - 1 - this._helptext->len()
                 : this._id->getcurpos()[1] - 1
-        if idx >= 0 && key ==? 'm'
+        if idx >= 0 && key == 'm'
             var info = this._GetPathIdxFromIdx(idx)
             if info.idx >= 0
                 var path = info.valid
@@ -117,6 +117,26 @@ export class PinWindow extends basewindow.BaseWindow
                 inputline.Open(path, 'rename',
                                function(this._CallbackRenamePin, [info.valid, info.idx]))
             endif
+        elseif idx >= 0 && key == 'd'
+            var info = this._GetPathIdxFromIdx(idx)
+            if info.idx >= 0
+                var path = info.valid
+                        ? this._valid[info.idx]
+                        : this._invalid[info.idx]
+                inputline.Open('', $"unpin {path->fnamemodify(':~:.')}? 'yes' to confirm",
+                               function(this._CallbackUnpin, [info.valid, info.idx]))
+            endif
+        elseif key == 'a'
+            var text = ''
+            if idx >= 0
+                var info = this._GetPathIdxFromIdx(idx)
+                if info.idx >= 0
+                    text = info.valid
+                            ? this._valid[info.idx]
+                            : this._invalid[info.idx]
+                endif
+            endif
+            inputline.Open(text, 'add', this._CallbackPin)
         elseif key == '?'
             this._show_help = !this._show_help
             this.SetLines(this._lines, false)
@@ -133,28 +153,98 @@ export class PinWindow extends basewindow.BaseWindow
     enddef
 
 
-    def _CallbackRenamePin(valid: bool, idx: number, path: string)
-        var p = path->fnamemodify(':p')
-        if valid && p->filereadable()
-            this._valid[idx] = p 
-        elseif valid
-            this._valid->remove(idx)
-            this._invalid->add(p)
-        elseif p->filereadable()
-            this._invalid->remove(idx)
-            this._valid->add(p)
+    def _CallbackPin(path: string) # {{{
+        var p = path->trim()
+        if p->filereadable()
+            if this._valid->index(p) >= 0
+                this._Log($'already pinned: {p}.')
+            else
+                this._valid->add(p)
+                this._Log($'pinned a file: {p}.')
+            endif
         else
-            this._invalid[idx] = p
+            if this._invalid->index(p) >= 0
+                this._LogErr($'invalid file: {p}.')
+            else
+                this._invalid->add(p)
+                this._Log($'pinned an invalid file: {p}.')
+            endif
         endif
         this.InitLines()
-    enddef
+    enddef # }}}
+
+
+    def _CallbackRenamePin(valid: bool, idx: number, path: string) # {{{
+        var p = path->trim()
+        if p == ''
+            this._Log('rename aborted.')
+            return
+        endif
+        p = p->fnamemodify(':p')
+        if valid && p->filereadable()
+            this._valid->remove(idx)
+            if this._valid->index(p) >= 0
+                this._Log($'already pinned: {p}.')
+            else
+                this._valid->insert(p, idx)
+                this._Log($'pinned a file: {p}.')
+            endif
+        elseif valid
+            this._valid->remove(idx)
+            if this._invalid->index(p) < 0
+                this._invalid->add(p)
+                this._Log($'pinned an invalid file: {p}.')
+            endif
+        elseif p->filereadable()
+            this._invalid->remove(idx)
+            if this._valid->index(p) >= 0
+                this._Log($'already pinned: {p}.')
+            else
+                this._valid->add(p)
+                this._Log($'pinned a file: {p}.')
+            endif
+        else
+            this._invalid->remove(idx)
+            if this._invalid->index(p) < 0
+                this._invalid->insert(p, idx)
+                this._Log($'pinned an invalid file: {p}.')
+            endif
+        endif
+        this.InitLines()
+    enddef # }}}
+
+
+    def _CallbackUnpin(valid: bool, idx: number, confirm: string) # {{{
+        if confirm->trim() !=? 'yes'
+            this._Log("didn't unpin anything.")
+            return
+        endif
+        if valid
+            this._Log($'unpinned: {this._valid[idx]}')
+            this._valid->remove(idx)
+        else
+            this._Log($'unpinned: {this._invalid[idx]}')
+            this._invalid->remove(idx)
+        endif
+        this.InitLines()
+    enddef # }}}
 
 
     def _InitHelpText() # {{{
         this._helptext = [
             this._FmtHelp('toggle help', '?'),
+            this._FmtHelp('switch to tree menu', 'h'),
             this._FmtHelp('exit poplar', '<esc>'),
+            this._FmtHelp('open/expand', '<cr>'),
+            this._FmtHelp('open in split', 'i'),
+            this._FmtHelp('open in vsplit', 'v'),
+            this._FmtHelp('open in tab', 't'),
+            this._FmtHelp('pin item', 'a'),
             this._FmtHelp('modify item', 'm'),
+            this._FmtHelp('unpin item', 'd'),
+            this._FmtHelp('move item down', 'J'),
+            this._FmtHelp('move item up', 'K'),
+            this._FmtHelp('yank full path', 'y'),
             {}
         ]
     enddef # }}}

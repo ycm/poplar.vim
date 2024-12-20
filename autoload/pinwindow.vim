@@ -60,7 +60,10 @@ export class PinWindow extends basewindow.BaseWindow
             return lines
         endif
         for path in this._valid
-            lines->add(this._FormatWithProp(path->fnamemodify(':~:.'), null_string, 1))
+            var prop = path->executable()
+                    ? 'prop_poplar_tree_exec_file'
+                    : 'prop_poplar_tree_file'
+            lines->add(this._FormatWithProp(path->fnamemodify(':~:.'), prop, 1))
         endfor
         if !this._valid->empty() && !this._invalid->empty()
             lines->add({})
@@ -137,6 +140,9 @@ export class PinWindow extends basewindow.BaseWindow
                 endif
             endif
             inputline.Open(text, 'add', this._CallbackPin)
+        elseif key == 'R'
+            this._Refresh()
+            this.InitLines()
         elseif key == '?'
             this._show_help = !this._show_help
             this.SetLines(this._lines, false)
@@ -151,6 +157,22 @@ export class PinWindow extends basewindow.BaseWindow
         endif
         return true
     enddef
+
+
+    def _Refresh() # {{{
+        for path in this._invalid
+            if path->filereadable()
+                this._valid->add(path)
+            endif
+        endfor
+        for path in this._valid
+            if !path->filereadable()
+                this._invalid->add(path)
+            endif
+        endfor
+        this._valid->filter((_, p) => p->filereadable())
+        this._invalid->filter((_, p) => !p->filereadable())
+    enddef # }}}
 
 
     def _CallbackPin(path: string) # {{{
@@ -242,6 +264,7 @@ export class PinWindow extends basewindow.BaseWindow
             this._FmtHelp('pin item', 'a'),
             this._FmtHelp('modify item', 'm'),
             this._FmtHelp('unpin item', 'd'),
+            this._FmtHelp('refresh', 'R'),
             this._FmtHelp('move item down', 'J'),
             this._FmtHelp('move item up', 'K'),
             this._FmtHelp('yank full path', 'y'),

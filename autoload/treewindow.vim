@@ -253,6 +253,7 @@ export class TreeWindow extends basewindow.BaseWindow
             this._FmtHelp('add file/dir', 'a'),
             this._FmtHelp('delete file/dir', 'd'),
             this._FmtHelp('move/rename', 'm'),
+            this._FmtHelp('change permissions', 'c'), # <TODO>
             {}
         ]
     enddef # }}}

@@ -55,10 +55,10 @@ export class PinWindow extends basewindow.BaseWindow
 
 
     def _FormatLines(): list<dict<any>> # {{{
-        var lines: list<dict<any>> = []
         if this._valid->empty() && this._invalid->empty()
-            return lines
+            return [this._FormatWithProp('no pins yet!', 'prop_poplar_help_text', 1)]
         endif
+        var lines: list<dict<any>> = []
         for path in this._valid
             var prop = path->executable()
                     ? 'prop_poplar_tree_exec_file'
@@ -140,6 +140,30 @@ export class PinWindow extends basewindow.BaseWindow
                 endif
             endif
             inputline.Open(text, 'add', this._CallbackPin)
+        elseif idx >= 0 && key == 'J'
+            var info = this._GetPathIdxFromIdx(idx)
+            if info.valid && info.idx >= 0 && info.idx + 1 < this._valid->len()
+                [this._valid[info.idx], this._valid[info.idx + 1]] = [
+                    this._valid[info.idx + 1], this._valid[info.idx]]
+                'j'->feedkeys()
+            elseif !info.valid && info.idx >= 0 && info.idx + 1 < this._invalid->len()
+                [this._invalid[info.idx], this._invalid[info.idx + 1]] = [
+                    this._invalid[info.idx + 1], this._invalid[info.idx]]
+                'j'->feedkeys()
+            endif
+            this.InitLines()
+        elseif idx >= 0 && key == 'K'
+            var info = this._GetPathIdxFromIdx(idx)
+            if info.valid && info.idx > 0 && this._valid->len() > 1
+                [this._valid[info.idx], this._valid[info.idx - 1]] = [
+                    this._valid[info.idx - 1], this._valid[info.idx]]
+                'k'->feedkeys()
+            elseif !info.valid && info.idx > 0 && this._invalid->len() > 1
+                [this._invalid[info.idx], this._invalid[info.idx - 1]] = [
+                    this._invalid[info.idx - 1], this._invalid[info.idx]]
+                'k'->feedkeys()
+            endif
+            this.InitLines()
         elseif key == 'R'
             this._Refresh()
             this.InitLines()

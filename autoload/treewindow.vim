@@ -248,6 +248,7 @@ export class TreeWindow extends basewindow.BaseWindow
             this._FmtHelp('refresh', 'R'),
             this._FmtHelp('show/hide hidden files', 'I'),
             this._FmtHelp('yank full path', 'y'), # <TODO>
+            this._FmtHelp('pin/unpin file', 'p'), # <TODO>
             this._FmtHelp('enter modify mode', 'm'),
             this._FmtHelp('---- MODIFY MODE ----'),
             this._FmtHelp('add file/dir', 'a'),

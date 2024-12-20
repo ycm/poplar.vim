@@ -19,6 +19,7 @@ export const PROPS = {
     InputCursor:  ['prop_poplar_input_cursor',   'PoplarInv',        'PoplarInv'],
     HelpText:     ['prop_poplar_help_text',      'Comment',          'Comment'],
     HelpKey:      ['prop_poplar_help_key',       'Keyword',          'Keyword'],
+    PinNotFound:  ['prop_poplar_pin_not_found',  'ErrorMsg',         'ErrorMsg'],
 }
 
 export const MODIFY_TEXT = '(modify-mode)'

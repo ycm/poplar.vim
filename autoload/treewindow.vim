@@ -111,7 +111,7 @@ export class TreeWindow extends basewindow.BaseWindow
     enddef
 
 
-    def _CallbackDeleteNode(path: string, confirm: string)
+    def _CallbackDeleteNode(path: string, confirm: string) # {{{
         if confirm->trim() !=? 'yes'
             this._Log($'node deletion aborted.')
             return
@@ -139,7 +139,7 @@ export class TreeWindow extends basewindow.BaseWindow
         endif
         this._tree.HardRefresh()
         this.SetLines(this._tree.GetPrettyFormatLines())
-    enddef
+    enddef # }}}
 
 
     def _CallbackMoveNode(from: string, to: string) # {{{

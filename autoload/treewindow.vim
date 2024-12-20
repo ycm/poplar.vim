@@ -71,7 +71,6 @@ export class TreeWindow extends basewindow.BaseWindow
                 return this._CallbackExit()
             endif
         elseif idx >= 0 && key == 'm'
-            # var node = this._tree.GetNodeAtDisplayIndex(idx)
             this.ToggleModifyMode()
         elseif idx >= 0 && key == 'c'
             var node = this._tree.GetNodeAtDisplayIndex(idx)

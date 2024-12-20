@@ -68,5 +68,6 @@ def Exit(): bool
     g:poplar.tree_win.GetId()->popup_close()
     g:poplar.pin_win.SaveCurrentState()
     g:poplar.pin_win.GetId()->popup_close()
+    g:poplar.pin_win.Write()
     return true
 enddef

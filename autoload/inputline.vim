@@ -124,7 +124,9 @@ enddef
 def FilterNonPrintable(key: string): bool
     if key ==? '<esc>'
         g:poplar.input.id->popup_close()
-        g:poplar.input.CallbackExit()
+        if g:poplar.input.CallbackExit != null
+            g:poplar.input.CallbackExit()
+        endif
         g:poplar.input->filter((_, _) => false) # clear dict
         return true
     elseif key ==? '<pastestart>'
@@ -140,7 +142,9 @@ def FilterNonPrintable(key: string): bool
     elseif key ==? '<cr>'
         g:poplar.input.CallbackEnter(g:poplar.input.text)
         g:poplar.input.id->popup_close()
-        g:poplar.input.CallbackExit()
+        if g:poplar.input.CallbackExit != null
+            g:poplar.input.CallbackExit()
+        endif
         g:poplar.input->filter((_, _) => false) # clear dict
         return true
     elseif CONSTANTS.K_IGNORE->index(key) >= 0

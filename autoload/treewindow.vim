@@ -36,10 +36,20 @@ export class TreeWindow extends basewindow.BaseWindow
                                this._CallbackAddNode,
                                this.ToggleModifyMode)
             elseif key == 'm'
+                if node.path == getcwd()
+                    this._LogErr('cannot modify cwd.')
+                    this.ToggleModifyMode()
+                    return false
+                endif
                 inputline.Open(node.path, 'move/rename node',
                                function(this._CallbackMoveNode, [node.path]),
                                this.ToggleModifyMode)
             elseif key == 'd'
+                if node.path == getcwd()
+                    this._LogErr('cannot modify cwd.')
+                    this.ToggleModifyMode()
+                    return false
+                endif
                 inputline.Open('', $"delete {node.path}? enter 'yes' to confirm",
                                function(this._CallbackDeleteNode, [node.path]),
                                this.ToggleModifyMode)
@@ -61,12 +71,8 @@ export class TreeWindow extends basewindow.BaseWindow
                 return this._CallbackExit()
             endif
         elseif idx >= 0 && key == 'm'
-            var node = this._tree.GetNodeAtDisplayIndex(idx)
-            if node.path->isdirectory() && node.path == getcwd()
-                this._LogErr('cannot modify cwd.')
-            else
-                this.ToggleModifyMode()
-            endif
+            # var node = this._tree.GetNodeAtDisplayIndex(idx)
+            this.ToggleModifyMode()
         elseif idx >= 0 && key == 'c'
             var node = this._tree.GetNodeAtDisplayIndex(idx)
             this._tree.ChangeRoot(node)

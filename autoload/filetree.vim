@@ -9,10 +9,6 @@ class FileTreeNode # {{{
 
 endclass # }}}
 
-# delete()
-# mkdir()
-# rename()
-# {fname}->writefile([])
 
 export class FileTree
     var root: FileTreeNode # not necessarily cwd

@@ -103,10 +103,36 @@ export class TreeWindow extends basewindow.BaseWindow
 
     def _CallbackMoveNode(from: string, to: string) # {{{
         var dest = to->trim()
-        if from->isdirectory()
-            # <TODO>
+        if dest == ''
+            this._Log('operation aborted.')
+            return
+        elseif from->isdirectory()
+            if dest[-1] != '/'
+                dest = dest .. '/'
+            endif
+            if rename(from, dest) == -1
+                this._LogErr($'failed to move directory {from}.')
+            else
+                var bufs = getbufinfo()
+                        ->filter((_, b) => b.name =~ $'^{from}/')
+                        ->mapnew((_, b) => [b.bufnr, b.name[from->len() + 1 :]])
+                var wins_replaced = 0
+                for [bufnr, basename] in bufs
+                    echomsg $'{bufnr}: is {basename}'
+                    for winid in bufnr->win_findbuf()
+                        $':noa | edit! {dest}{basename}'->win_execute(winid)
+                        ++wins_replaced
+                    endfor
+                endfor
+                if wins_replaced == 0
+                    this._Log($'renamed directory to {dest}.')
+                else
+                    this._Log($'renamed directory to {dest} and switched buffers in {wins_replaced} windows.')
+                endif
+            endif
         elseif dest->filereadable()
             this._LogErr($'file already exists: {dest}.')
+            return
         else
             if dest[-1] == '/'
                 try
@@ -120,10 +146,19 @@ export class TreeWindow extends basewindow.BaseWindow
                 catch /E739/
                 endtry
             endif
-            if rename(from, $'{dest}') == -1
-                this._LogErr($'failed to move file to {dest}.')
+            if rename(from, dest) == -1
+                this._LogErr($'failed to move file from {from} to {dest}.')
             else
-                this._Log($'moved file to {dest}.')
+                var winids = from->bufnr()->win_findbuf()
+                dest = dest->fnamemodify(':~:.')
+                for winid in winids
+                    $':noa | edit! {dest}'->win_execute(winid)
+                endfor
+                if winids == []
+                    this._Log($'moved file to {dest}.')
+                else
+                    this._Log($'moved file to {dest} and switched buffer(s) in {winids->len()} windows.')
+                endif
             endif
         endif
         this._tree.HardRefresh()
@@ -133,23 +168,25 @@ export class TreeWindow extends basewindow.BaseWindow
 
     def _CallbackAddNode(path: string) # {{{
         var trimmed = path->trim()
-        if trimmed[-1] == '/'
+        if trimmed == ''
+            this._Log('node creation aborted.')
+            return
+        elseif trimmed->filereadable()
+            this._LogErr($'{trimmed} exists already.')
+            return
+        elseif trimmed[-1] == '/'
             try
                 mkdir(trimmed, 'p')
                 this._Log($'created directory: {trimmed}.')
             catch /E739/
                 this._LogErr($'failed to create directory: {trimmed} (E739).')
             endtry
-        elseif trimmed->filereadable()
-            this._LogErr($'{trimmed} exists already.')
-            return
         else
             try
                 []->writefile(trimmed, 'a')
                 this._Log($'created file: {trimmed}')
             catch # privileged directory, etc.
                 this._LogErr($'failed to create file: {trimmed}.')
-        echom $'placeholder: received <{text}>'
             endtry
         endif
         this._tree.HardRefresh()

@@ -3,6 +3,7 @@ vim9script
 import './basewindow.vim'
 import './filetree.vim'
 import './inputline.vim'
+import './constants.vim' as CONSTANTS
 
 export class TreeWindow extends basewindow.BaseWindow
     var _tree: filetree.FileTree
@@ -27,7 +28,7 @@ export class TreeWindow extends basewindow.BaseWindow
                 : this._id->getcurpos()[1] - 1
         if idx >= 0 && this._show_modify_mode
             var node = this._tree.GetNodeAtDisplayIndex(idx)
-            if key == 'a'
+            if this._IsKey(key, CONSTANTS.KEYS.TREE_ADD_NODE)
                 var starting_text = node.path->isdirectory()
                         ? $'{node.path}/'
                         : $"{node.path->fnamemodify(':h')}/"
@@ -35,7 +36,7 @@ export class TreeWindow extends basewindow.BaseWindow
                                'add a node (dirs end with /)',
                                this._CallbackAddNode,
                                this.ToggleModifyMode)
-            elseif key == 'm'
+            elseif this._IsKey(key, CONSTANTS.KEYS.TREE_MOVE_NODE)
                 if node.path == getcwd()
                     this._LogErr('cannot modify cwd.')
                     this.ToggleModifyMode()
@@ -44,7 +45,7 @@ export class TreeWindow extends basewindow.BaseWindow
                 inputline.Open(node.path, 'move/rename node',
                                function(this._CallbackMoveNode, [node.path]),
                                this.ToggleModifyMode)
-            elseif key == 'd'
+            elseif this._IsKey(key, CONSTANTS.KEYS.TREE_DELETE_NODE)
                 if node.path == getcwd()
                     this._LogErr('cannot modify cwd.')
                     this.ToggleModifyMode()
@@ -54,7 +55,7 @@ export class TreeWindow extends basewindow.BaseWindow
                                function(this._CallbackDeleteNode, [node.path]),
                                this.ToggleModifyMode)
             endif
-        elseif idx >= 0 && key ==? '<cr>' # ------------------------------ {{{
+        elseif idx >= 0 && this._IsKey(key, CONSTANTS.KEYS.TREE_OPEN) # {{{
             var node = this._tree.GetNodeAtDisplayIndex(idx)
             if node.path->isdirectory()
                 this._tree.ToggleDir(node)
@@ -63,33 +64,39 @@ export class TreeWindow extends basewindow.BaseWindow
                 execute $'drop {node.path->fnamemodify(':~:.')}'
                 return this._CallbackExit()
             endif
-        elseif idx >= 0 && ['i', 't', 'v']->index(key) >= 0
+        elseif idx >= 0 && [ # <TODO> separate this into three cases
+                    CONSTANTS.KEYS.TREE_OPEN_SPLIT,
+                    CONSTANTS.KEYS.TREE_OPEN_VSPLIT,
+                    CONSTANTS.KEYS.TREE_OPEN_TAB]->index(key) >= 0
             var node = this._tree.GetNodeAtDisplayIndex(idx)
             if !node.path->isdirectory()
-                var cmd = {'i': 'split', 'v': 'vsplit', 't': 'tab drop'}
-                execute $'{cmd[key]} {node.path->fnamemodify(':~:.')}'
+                var cmd: dict<string> = {}
+                cmd[CONSTANTS.KEYS.TREE_OPEN_SPLIT] = 'split'
+                cmd[CONSTANTS.KEYS.TREE_OPEN_VSPLIT] = 'vsplit'
+                cmd[CONSTANTS.KEYS.TREE_OPEN_TAB] = 'tab drop'
+                execute $"{cmd[key]} {node.path->fnamemodify(':~:.')}"
                 return this._CallbackExit()
             endif
-        elseif idx >= 0 && key == 'm'
+        elseif idx >= 0 && this._IsKey(key, CONSTANTS.KEYS.TREE_MODIFY_MODE)
             this.ToggleModifyMode()
-        elseif idx >= 0 && key == 'c'
+        elseif idx >= 0 && this._IsKey(key, CONSTANTS.KEYS.TREE_CHROOT)
             var node = this._tree.GetNodeAtDisplayIndex(idx)
             this._tree.ChangeRoot(node)
             this.SetLines(this._tree.GetPrettyFormatLines())
-        elseif key == 'I'
+        elseif this._IsKey(key, CONSTANTS.KEYS.TREE_TOGGLE_HIDDEN)
             this._tree.ToggleHidden()
             this.SetLines(this._tree.GetPrettyFormatLines())
-        elseif key == 'u'
+        elseif this._IsKey(key, CONSTANTS.KEYS.TREE_RAISE_ROOT)
             this._tree.RaiseRoot()
             this._tree.HardRefresh()
             this.SetLines(this._tree.GetPrettyFormatLines())
-        elseif key == 'C'
+        elseif this._IsKey(key, CONSTANTS.KEYS.TREE_CWD_ROOT)
             this._tree.ResetRootToCwd()
             this.SetLines(this._tree.GetPrettyFormatLines())
-        elseif key == 'R'
+        elseif this._IsKey(key, CONSTANTS.KEYS.TREE_REFRESH)
             this._tree.HardRefresh()
             this.SetLines(this._tree.GetPrettyFormatLines())
-        elseif key == '?'
+        elseif this._IsKey(key, CONSTANTS.KEYS.TREE_TOGGLE_HELP)
             this._show_help = !this._show_help
             this.SetLines(this._lines, false)
             if this._show_help
@@ -236,25 +243,26 @@ export class TreeWindow extends basewindow.BaseWindow
 
     def _InitHelpText() # {{{
         this._helptext = [
-            this._FmtHelp('toggle help', '?'),
-            this._FmtHelp('exit poplar', '<esc>'),
-            this._FmtHelp('open/expand', '<cr>'),
-            this._FmtHelp('open in split', 'i'),
-            this._FmtHelp('open in vsplit', 'v'),
-            this._FmtHelp('open in tab', 't'),
-            this._FmtHelp('raise root by one dir', 'u'),
-            this._FmtHelp('set dir as root', 'c'),
-            this._FmtHelp('reset cwd as root', 'C'),
-            this._FmtHelp('refresh', 'R'),
-            this._FmtHelp('show/hide hidden files', 'I'),
-            this._FmtHelp('yank full path', 'y'), # <TODO>
-            this._FmtHelp('pin/unpin file', 'p'), # <TODO>
-            this._FmtHelp('enter modify mode', 'm'),
+            this._FmtHelp('toggle help',            CONSTANTS.KEYS.TREE_TOGGLE_HELP),
+            this._FmtHelp('switch to pin menu',     CONSTANTS.KEYS.SWITCH_WINDOW_R),
+            this._FmtHelp('exit poplar',            CONSTANTS.KEYS.EXIT),
+            this._FmtHelp('open/expand',            CONSTANTS.KEYS.TREE_OPEN),
+            this._FmtHelp('open in split',          CONSTANTS.KEYS.TREE_OPEN_SPLIT),
+            this._FmtHelp('open in vsplit',         CONSTANTS.KEYS.TREE_OPEN_VSPLIT),
+            this._FmtHelp('open in tab',            CONSTANTS.KEYS.TREE_OPEN_TAB),
+            this._FmtHelp('raise root by one dir',  CONSTANTS.KEYS.TREE_RAISE_ROOT),
+            this._FmtHelp('set dir as root',        CONSTANTS.KEYS.TREE_CHROOT),
+            this._FmtHelp('reset cwd as root',      CONSTANTS.KEYS.TREE_CWD_ROOT),
+            this._FmtHelp('refresh',                CONSTANTS.KEYS.TREE_REFRESH),
+            this._FmtHelp('show/hide hidden files', CONSTANTS.KEYS.TREE_TOGGLE_HIDDEN),
+            this._FmtHelp('yank full path',         CONSTANTS.KEYS.TREE_YANK_PATH), # <TODO>
+            this._FmtHelp('pin/unpin file',         CONSTANTS.KEYS.TREE_TOGGLE_PIN), # <TODO>
+            this._FmtHelp('enter modify mode',      CONSTANTS.KEYS.TREE_MODIFY_MODE),
             this._FmtHelp('---- MODIFY MODE ----'),
-            this._FmtHelp('add file/dir', 'a'),
-            this._FmtHelp('delete file/dir', 'd'),
-            this._FmtHelp('move/rename', 'm'),
-            this._FmtHelp('change permissions', 'c'), # <TODO>
+            this._FmtHelp('add file/dir',           CONSTANTS.KEYS.TREE_ADD_NODE),
+            this._FmtHelp('delete file/dir',        CONSTANTS.KEYS.TREE_DELETE_NODE),
+            this._FmtHelp('move/rename',            CONSTANTS.KEYS.TREE_MOVE_NODE),
+            this._FmtHelp('change permissions',     CONSTANTS.KEYS.TREE_CHMOD), # <TODO>
             {}
         ]
     enddef # }}}

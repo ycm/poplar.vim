@@ -44,14 +44,14 @@ export class BaseWindow
 
     def _BaseFilter(id: number, key: string): bool # {{{
         var key_norm = key->keytrans()
-        if key_norm ==? '<esc>'
+        if this._IsKey(key_norm, CONSTANTS.KEYS.EXIT)
             if this._show_modify_mode
                 this.ToggleModifyMode()
                 return true
             else
                 return this._CallbackExit()
             endif
-        elseif !this._show_modify_mode && key_norm == 'j'
+        elseif !this._show_modify_mode && (key_norm == 'j' || key_norm ==? '<down>')
             var disp_len = this._show_help
                     ? this._helptext->len() + this._lines->len()
                     : this._lines->len()
@@ -59,13 +59,13 @@ export class BaseWindow
                 return true
             endif
             return this._id->popup_filter_menu(key)
-        elseif !this._show_modify_mode && key_norm == 'k'
+        elseif !this._show_modify_mode && (key_norm == 'k' || key_norm ==? '<up>')
             if this._id->getcurpos()[1] <= 1
                 return true
             endif
             return this._id->popup_filter_menu(key)
-        elseif (!this._show_modify_mode && key_norm == 'h' && !this._on_left)
-            || (!this._show_modify_mode && key_norm == 'l' && this._on_left)
+        elseif (!this._show_modify_mode && this._IsKey(key_norm, CONSTANTS.KEYS.SWITCH_WINDOW_L) && !this._on_left)
+            || (!this._show_modify_mode && this._IsKey(key_norm, CONSTANTS.KEYS.SWITCH_WINDOW_R) && this._on_left)
             return this._CallbackSwitchFocus()
         endif
         return this._SpecificFilter(key_norm)
@@ -175,5 +175,11 @@ export class BaseWindow
         this._Log(err)
         echohl None
     enddef # }}}
+
+    def _IsKey(key1: string, key2: string): bool
+        return key2->strcharlen() == 1
+                ? key1 == key2
+                : key1 ==? key2
+    enddef
 
 endclass

@@ -31,6 +31,7 @@ export const KEYS = { # {{{
     PIN_OPEN_SPLIT:     'i',
     PIN_OPEN_VSPLIT:    'v',
     PIN_OPEN_TAB:       't',
+    PIN_MODIFY_MODE:    'm',
     PIN_ADD:            'a',
     PIN_MODIFY:         'm',
     PIN_DELETE:         'd',

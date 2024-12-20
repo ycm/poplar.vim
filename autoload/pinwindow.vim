@@ -164,58 +164,54 @@ export class PinWindow extends basewindow.BaseWindow
         var idx = this._show_help
                 ? this._id->getcurpos()[1] - 1 - this._helptext->len()
                 : this._id->getcurpos()[1] - 1
-        if idx >= 0 && this._IsKey(key, CONSTANTS.KEYS.PIN_MODIFY)
-            var info = this._GetPathIdxFromIdx(idx)
-            if info.idx >= 0
-                var path = info.valid
-                        ? this._valid[info.idx]
-                        : this._invalid[info.idx]
-                inputline.Open(path, 'modify a pin',
-                               function(this._CallbackRenamePin, [info.valid, info.idx]))
-            endif
-        elseif idx >= 0 && this._IsKey(key, CONSTANTS.KEYS.PIN_DELETE)
-            var info = this._GetPathIdxFromIdx(idx)
-            if info.idx >= 0
-                var path = info.valid
-                        ? this._valid[info.idx]
-                        : this._invalid[info.idx]
-                inputline.Open('', $"unpin {path->fnamemodify(':~:.')}? ('yes' to confirm)",
-                               function(this._CallbackUnpin, [info.valid, info.idx]))
-            endif
-        elseif this._IsKey(key, CONSTANTS.KEYS.PIN_ADD)
-            var text = ''
-            if idx >= 0
+        if this._show_modify_mode
+            if idx >= 0 && this._IsKey(key, CONSTANTS.KEYS.PIN_MODIFY)
                 var info = this._GetPathIdxFromIdx(idx)
                 if info.idx >= 0
-                    text = info.valid
+                    var path = info.valid
                             ? this._valid[info.idx]
                             : this._invalid[info.idx]
+                    inputline.Open(path, 'modify a pin',
+                                   function(this._CallbackRenamePin, [info.valid, info.idx]),
+                                   this.ToggleModifyMode)
                 endif
+            elseif idx >= 0 && this._IsKey(key, CONSTANTS.KEYS.PIN_DELETE)
+                var info = this._GetPathIdxFromIdx(idx)
+                if info.idx >= 0
+                    var path = info.valid
+                            ? this._valid[info.idx]
+                            : this._invalid[info.idx]
+                    inputline.Open('', $"unpin {path->fnamemodify(':~:.')}? ('yes' to confirm)",
+                                   function(this._CallbackUnpin, [info.valid, info.idx]),
+                                   this.ToggleModifyMode)
+                endif
+            elseif this._IsKey(key, CONSTANTS.KEYS.PIN_ADD)
+                var text = ''
+                if idx >= 0
+                    var info = this._GetPathIdxFromIdx(idx)
+                    if info.idx >= 0
+                        text = info.valid
+                                ? this._valid[info.idx]
+                                : this._invalid[info.idx]
+                    endif
+                endif
+                inputline.Open(text, 'add a pin', this._CallbackPin, this.ToggleModifyMode)
             endif
-            inputline.Open(text, 'add a pin', this._CallbackPin)
-        elseif this._IsKey(key, CONSTANTS.KEYS.PIN_OPEN_SPLIT)
-            var info = this._GetPathIdxFromIdx(idx)
-            if info.idx >= 0
-                var path = info.valid
-                        ? this._valid[info.idx]
-                        : this._invalid[info.idx]
-                execute $"split {path->fnamemodify(':~:.')}"
+        elseif idx >= 0 && this._IsKey(key, CONSTANTS.KEYS.PIN_OPEN)
+            if this._TryOpenFile(idx, 'drop')
+                return this._CallbackExit()
             endif
-        elseif this._IsKey(key, CONSTANTS.KEYS.PIN_OPEN_VSPLIT)
-            var info = this._GetPathIdxFromIdx(idx)
-            if info.idx >= 0
-                var path = info.valid
-                        ? this._valid[info.idx]
-                        : this._invalid[info.idx]
-                execute $"vsplit {path->fnamemodify(':~:.')}"
+        elseif idx >= 0 && this._IsKey(key, CONSTANTS.KEYS.PIN_OPEN_SPLIT)
+            if this._TryOpenFile(idx, 'split')
+                return this._CallbackExit()
             endif
-        elseif this._IsKey(key, CONSTANTS.KEYS.PIN_OPEN_TAB)
-            var info = this._GetPathIdxFromIdx(idx)
-            if info.idx >= 0
-                var path = info.valid
-                        ? this._valid[info.idx]
-                        : this._invalid[info.idx]
-                execute $"tab drop {path->fnamemodify(':~:.')}"
+        elseif idx >= 0 && this._IsKey(key, CONSTANTS.KEYS.PIN_OPEN_VSPLIT)
+            if this._TryOpenFile(idx, 'vsplit')
+                return this._CallbackExit()
+            endif
+        elseif idx >= 0 && this._IsKey(key, CONSTANTS.KEYS.PIN_OPEN_TAB)
+            if this._TryOpenFile(idx, 'tab drop')
+                return this._CallbackExit()
             endif
         elseif idx >= 0 && this._IsKey(key, CONSTANTS.KEYS.PIN_MOVE_DOWN)
             var info = this._GetPathIdxFromIdx(idx)
@@ -241,6 +237,8 @@ export class PinWindow extends basewindow.BaseWindow
                 'k'->feedkeys()
             endif
             this.SoftRefresh()
+        elseif this._IsKey(key, CONSTANTS.KEYS.PIN_MODIFY_MODE)
+            this.ToggleModifyMode()
         elseif this._IsKey(key, CONSTANTS.KEYS.PIN_REFRESH)
             this.HardRefresh()
         elseif this._IsKey(key, CONSTANTS.KEYS.PIN_TOGGLE_HELP)
@@ -257,6 +255,19 @@ export class PinWindow extends basewindow.BaseWindow
         endif
         return true
     enddef # }}}
+
+
+    def _TryOpenFile(idx: number, cmd: string): bool
+        var info = this._GetPathIdxFromIdx(idx)
+        if info.idx >= 0
+            var path = info.valid
+                    ? this._valid[info.idx]
+                    : this._invalid[info.idx]
+            execute $"{cmd} {path->fnamemodify(':~:.')}"
+            return true
+        endif
+        return false
+    enddef
 
 
     def _RefreshPaths() # {{{
@@ -366,13 +377,15 @@ export class PinWindow extends basewindow.BaseWindow
             this._FmtHelp('open in split',       CONSTANTS.KEYS.PIN_OPEN_SPLIT),
             this._FmtHelp('open in vsplit',      CONSTANTS.KEYS.PIN_OPEN_VSPLIT),
             this._FmtHelp('open in tab',         CONSTANTS.KEYS.PIN_OPEN_TAB),
-            this._FmtHelp('add pin',             CONSTANTS.KEYS.PIN_ADD),
-            this._FmtHelp('modify pin',          CONSTANTS.KEYS.PIN_MODIFY),
-            this._FmtHelp('delete pin',          CONSTANTS.KEYS.PIN_DELETE),
             this._FmtHelp('refresh',             CONSTANTS.KEYS.PIN_REFRESH),
             this._FmtHelp('move item down',      CONSTANTS.KEYS.PIN_MOVE_DOWN),
             this._FmtHelp('move item up',        CONSTANTS.KEYS.PIN_MOVE_UP),
             this._FmtHelp('yank full path',      CONSTANTS.KEYS.PIN_YANK_PATH),
+            this._FmtHelp('enter modify mode',   CONSTANTS.KEYS.PIN_MODIFY_MODE),
+            this._FmtHelp('---- MODIFY MODE ----'),
+            this._FmtHelp('add pin',             CONSTANTS.KEYS.PIN_ADD),
+            this._FmtHelp('modify pin',          CONSTANTS.KEYS.PIN_MODIFY),
+            this._FmtHelp('delete pin',          CONSTANTS.KEYS.PIN_DELETE),
             {}
         ]
     enddef # }}}

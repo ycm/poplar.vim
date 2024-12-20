@@ -39,6 +39,10 @@ export class TreeWindow extends basewindow.BaseWindow
                 inputline.Open(node.path, 'move/rename node',
                                function(this._CallbackMoveNode, [node.path]),
                                this.ToggleModifyMode)
+            elseif key == 'd'
+                inputline.Open('', $"delete {node.path}? enter 'yes' to confirm",
+                               function(this._CallbackDeleteNode, [node.path]),
+                               this.ToggleModifyMode)
             endif
         elseif idx >= 0 && key ==? '<cr>' # ------------------------------ {{{
             var node = this._tree.GetNodeAtDisplayIndex(idx)
@@ -98,6 +102,37 @@ export class TreeWindow extends basewindow.BaseWindow
 
     def _CallbackInputLineEnter(text: string)
         this._Log($'placeholder received <{text}>')
+    enddef
+
+
+    def _CallbackDeleteNode(path: string, confirm: string)
+        if confirm->trim() !=? 'yes'
+            this._Log($'node deletion aborted.')
+            return
+        endif
+        if path->isdirectory()
+            if path->delete('d') == 0
+                this._Log($'deleted directory {path}.')
+            else
+                this._LogErr($'could not delete directory {path}.')
+            endif
+        else
+            if path->delete() == 0
+                var winids = path->bufnr()->win_findbuf()
+                for winid in winids
+                    $':noa | q!'->win_execute(winid)
+                endfor
+                if winids == []
+                    this._Log($'deleted file {path}.')
+                else
+                    this._Log($'deleted file {path} and removed {winids->len()} windows.')
+                endif
+            else
+                this._LogErr($'could not delete file: {path}.')
+            endif
+        endif
+        this._tree.HardRefresh()
+        this.SetLines(this._tree.GetPrettyFormatLines())
     enddef
 
 

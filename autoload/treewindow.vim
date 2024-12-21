@@ -3,7 +3,6 @@ vim9script
 import './basewindow.vim'
 import './filetree.vim'
 import './inputline.vim'
-import './constants.vim' as CONSTANTS
 
 export class TreeWindow extends basewindow.BaseWindow
     var _tree: filetree.FileTree
@@ -30,7 +29,7 @@ export class TreeWindow extends basewindow.BaseWindow
                 : this._id->getcurpos()[1] - 1
         if idx >= 0 && this._show_modify_mode
             var node = this._tree.GetNodeAtDisplayIndex(idx)
-            if this._IsKey(key, CONSTANTS.KEYS.TREE_ADD_NODE)
+            if this._IsKey(key, g:poplar.keys.TREE_ADD_NODE)
                 var starting_text = node.path->isdirectory()
                         ? $'{node.path}/'
                         : $"{node.path->fnamemodify(':h')}/"
@@ -38,7 +37,7 @@ export class TreeWindow extends basewindow.BaseWindow
                                'add a node (dirs end with /)',
                                this._CallbackAddNode,
                                this.ToggleModifyMode)
-            elseif this._IsKey(key, CONSTANTS.KEYS.TREE_MOVE_NODE)
+            elseif this._IsKey(key, g:poplar.keys.TREE_MOVE_NODE)
                 if getcwd() =~ $'^{node.path}/'
                     this._LogErr('cannot move dir containing cwd.')
                 elseif node.path == getcwd()
@@ -48,7 +47,7 @@ export class TreeWindow extends basewindow.BaseWindow
                                    function(this._CallbackMoveNode, [node.path]),
                                    this.ToggleModifyMode)
                 endif
-            elseif this._IsKey(key, CONSTANTS.KEYS.TREE_DELETE_NODE)
+            elseif this._IsKey(key, g:poplar.keys.TREE_DELETE_NODE)
                 if getcwd() =~ $'^{node.path}/'
                     this._LogErr('cannot delete dir containing cwd.')
                 elseif node.path == getcwd()
@@ -58,7 +57,7 @@ export class TreeWindow extends basewindow.BaseWindow
                                    function(this._CallbackDeleteNode, [node.path]),
                                    this.ToggleModifyMode)
                 endif
-            elseif this._IsKey(key, CONSTANTS.KEYS.TREE_CHMOD)
+            elseif this._IsKey(key, g:poplar.keys.TREE_CHMOD)
                 if getcwd() =~ $'^{node.path}/'
                     this._LogErr('cannot call chmod on dir containing cwd.')
                 elseif node.path == getcwd()
@@ -69,7 +68,7 @@ export class TreeWindow extends basewindow.BaseWindow
                                    this.ToggleModifyMode)
                 endif
             endif
-        elseif idx >= 0 && this._IsKey(key, CONSTANTS.KEYS.TREE_OPEN) # {{{
+        elseif idx >= 0 && this._IsKey(key, g:poplar.keys.TREE_OPEN) # {{{
             var node = this._tree.GetNodeAtDisplayIndex(idx)
             if node.path->isdirectory()
                 this._tree.ToggleDir(node)
@@ -78,55 +77,55 @@ export class TreeWindow extends basewindow.BaseWindow
                 execute $'drop {node.path->fnamemodify(':~:.')}'
                 return this._CallbackExit()
             endif
-        elseif idx >= 0 && this._IsKey(key, CONSTANTS.KEYS.TREE_OPEN_SPLIT)
+        elseif idx >= 0 && this._IsKey(key, g:poplar.keys.TREE_OPEN_SPLIT)
             var node = this._tree.GetNodeAtDisplayIndex(idx)
             if !node.path->isdirectory()
                 execute $'split {node.path->fnamemodify(':~:.')}'
                 return this._CallbackExit()
             endif
-        elseif idx >= 0 && this._IsKey(key, CONSTANTS.KEYS.TREE_OPEN_VSPLIT)
+        elseif idx >= 0 && this._IsKey(key, g:poplar.keys.TREE_OPEN_VSPLIT)
             var node = this._tree.GetNodeAtDisplayIndex(idx)
             if !node.path->isdirectory()
                 execute $'vsplit {node.path->fnamemodify(':~:.')}'
                 return this._CallbackExit()
             endif
-        elseif idx >= 0 && this._IsKey(key, CONSTANTS.KEYS.TREE_OPEN_TAB)
+        elseif idx >= 0 && this._IsKey(key, g:poplar.keys.TREE_OPEN_TAB)
             var node = this._tree.GetNodeAtDisplayIndex(idx)
             if !node.path->isdirectory()
                 execute $'tab drop {node.path->fnamemodify(':~:.')}'
                 return this._CallbackExit()
             endif
-        elseif idx >= 0 && this._IsKey(key, CONSTANTS.KEYS.TREE_MODIFY_MODE)
+        elseif idx >= 0 && this._IsKey(key, g:poplar.keys.TREE_MODIFY_MODE)
             this.ToggleModifyMode()
-        elseif idx >= 0 && this._IsKey(key, CONSTANTS.KEYS.TREE_CHROOT)
+        elseif idx >= 0 && this._IsKey(key, g:poplar.keys.TREE_CHROOT)
             var node = this._tree.GetNodeAtDisplayIndex(idx)
             this._tree.ChangeRoot(node)
             this.SetLines(this._tree.GetPrettyFormatLines())
-        elseif idx >= 0 && this._IsKey(key, CONSTANTS.KEYS.TREE_TOGGLE_PIN)
+        elseif idx >= 0 && this._IsKey(key, g:poplar.keys.TREE_TOGGLE_PIN)
             var node = this._tree.GetNodeAtDisplayIndex(idx)
             if !(node.path->filereadable())
                 this._LogErr($'cannot pin {node.path}')
             else
                 this._pin_callbacks.TogglePin(node.path)
             endif
-        elseif idx >= 0 && this._IsKey(key, CONSTANTS.KEYS.TREE_YANK_PATH)
+        elseif idx >= 0 && this._IsKey(key, g:poplar.keys.TREE_YANK_PATH)
             var node = this._tree.GetNodeAtDisplayIndex(idx)
             node.path->setreg('+')
             this._Log($"saved '{node.path}' to register '+'")
-        elseif this._IsKey(key, CONSTANTS.KEYS.TREE_TOGGLE_HIDDEN)
+        elseif this._IsKey(key, g:poplar.keys.TREE_TOGGLE_HIDDEN)
             this._tree.ToggleHidden()
             this.SetLines(this._tree.GetPrettyFormatLines())
-        elseif this._IsKey(key, CONSTANTS.KEYS.TREE_RAISE_ROOT)
+        elseif this._IsKey(key, g:poplar.keys.TREE_RAISE_ROOT)
             this._tree.RaiseRoot()
             this._tree.HardRefresh()
             this.SetLines(this._tree.GetPrettyFormatLines())
-        elseif this._IsKey(key, CONSTANTS.KEYS.TREE_CWD_ROOT)
+        elseif this._IsKey(key, g:poplar.keys.TREE_CWD_ROOT)
             this._tree.ResetRootToCwd()
             this.SetLines(this._tree.GetPrettyFormatLines())
-        elseif this._IsKey(key, CONSTANTS.KEYS.TREE_REFRESH)
+        elseif this._IsKey(key, g:poplar.keys.TREE_REFRESH)
             this._tree.HardRefresh()
             this.SetLines(this._tree.GetPrettyFormatLines())
-        elseif this._IsKey(key, CONSTANTS.KEYS.TREE_TOGGLE_HELP)
+        elseif this._IsKey(key, g:poplar.keys.TREE_TOGGLE_HELP)
             this._show_help = !this._show_help
             this.SetLines(this._lines, false)
             if this._show_help
@@ -292,26 +291,26 @@ export class TreeWindow extends basewindow.BaseWindow
 
     def _InitHelpText() # {{{
         this._helptext = [
-            this._FmtHelp('toggle help',            CONSTANTS.KEYS.TREE_TOGGLE_HELP),
-            this._FmtHelp('switch to pin menu',     CONSTANTS.KEYS.SWITCH_WINDOW_R),
-            this._FmtHelp('exit poplar',            CONSTANTS.KEYS.EXIT),
-            this._FmtHelp('open/expand',            CONSTANTS.KEYS.TREE_OPEN),
-            this._FmtHelp('open in split',          CONSTANTS.KEYS.TREE_OPEN_SPLIT),
-            this._FmtHelp('open in vsplit',         CONSTANTS.KEYS.TREE_OPEN_VSPLIT),
-            this._FmtHelp('open in tab',            CONSTANTS.KEYS.TREE_OPEN_TAB),
-            this._FmtHelp('raise root by one dir',  CONSTANTS.KEYS.TREE_RAISE_ROOT),
-            this._FmtHelp('set dir as root',        CONSTANTS.KEYS.TREE_CHROOT),
-            this._FmtHelp('reset cwd as root',      CONSTANTS.KEYS.TREE_CWD_ROOT),
-            this._FmtHelp('refresh',                CONSTANTS.KEYS.TREE_REFRESH),
-            this._FmtHelp('show/hide hidden files', CONSTANTS.KEYS.TREE_TOGGLE_HIDDEN),
-            this._FmtHelp('yank full path',         CONSTANTS.KEYS.TREE_YANK_PATH),
-            this._FmtHelp('pin/unpin file',         CONSTANTS.KEYS.TREE_TOGGLE_PIN),
-            this._FmtHelp('enter modify mode',      CONSTANTS.KEYS.TREE_MODIFY_MODE),
+            this._FmtHelp('toggle help',            g:poplar.keys.TREE_TOGGLE_HELP),
+            this._FmtHelp('switch to pin menu',     g:poplar.keys.SWITCH_WINDOW_R),
+            this._FmtHelp('exit poplar',            g:poplar.keys.EXIT),
+            this._FmtHelp('open/expand',            g:poplar.keys.TREE_OPEN),
+            this._FmtHelp('open in split',          g:poplar.keys.TREE_OPEN_SPLIT),
+            this._FmtHelp('open in vsplit',         g:poplar.keys.TREE_OPEN_VSPLIT),
+            this._FmtHelp('open in tab',            g:poplar.keys.TREE_OPEN_TAB),
+            this._FmtHelp('raise root by one dir',  g:poplar.keys.TREE_RAISE_ROOT),
+            this._FmtHelp('set dir as root',        g:poplar.keys.TREE_CHROOT),
+            this._FmtHelp('reset cwd as root',      g:poplar.keys.TREE_CWD_ROOT),
+            this._FmtHelp('refresh',                g:poplar.keys.TREE_REFRESH),
+            this._FmtHelp('show/hide hidden files', g:poplar.keys.TREE_TOGGLE_HIDDEN),
+            this._FmtHelp('yank full path',         g:poplar.keys.TREE_YANK_PATH),
+            this._FmtHelp('pin/unpin file',         g:poplar.keys.TREE_TOGGLE_PIN),
+            this._FmtHelp('enter modify mode',      g:poplar.keys.TREE_MODIFY_MODE),
             this._FmtHelp('---- MODIFY MODE ----'),
-            this._FmtHelp('add file/dir',           CONSTANTS.KEYS.TREE_ADD_NODE),
-            this._FmtHelp('delete file/dir',        CONSTANTS.KEYS.TREE_DELETE_NODE),
-            this._FmtHelp('move/rename',            CONSTANTS.KEYS.TREE_MOVE_NODE),
-            this._FmtHelp('change permissions',     CONSTANTS.KEYS.TREE_CHMOD),
+            this._FmtHelp('add file/dir',           g:poplar.keys.TREE_ADD_NODE),
+            this._FmtHelp('delete file/dir',        g:poplar.keys.TREE_DELETE_NODE),
+            this._FmtHelp('move/rename',            g:poplar.keys.TREE_MOVE_NODE),
+            this._FmtHelp('change permissions',     g:poplar.keys.TREE_CHMOD),
             {}
         ]
     enddef # }}}

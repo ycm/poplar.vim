@@ -2,7 +2,6 @@ vim9script
 
 import './basewindow.vim'
 import './inputline.vim'
-import './constants.vim' as CONSTANTS
 
 export class PinWindow extends basewindow.BaseWindow
     var _valid: list<string> = []
@@ -166,7 +165,7 @@ export class PinWindow extends basewindow.BaseWindow
                 ? this._id->getcurpos()[1] - 1 - this._helptext->len()
                 : this._id->getcurpos()[1] - 1
         if this._show_modify_mode
-            if idx >= 0 && this._IsKey(key, CONSTANTS.KEYS.PIN_MODIFY)
+            if idx >= 0 && this._IsKey(key, g:poplar.keys.PIN_MODIFY)
                 var info = this._GetPathIdxFromIdx(idx)
                 if info.idx >= 0
                     var path = info.valid
@@ -176,7 +175,7 @@ export class PinWindow extends basewindow.BaseWindow
                                    function(this._CallbackRenamePin, [info.valid, info.idx]),
                                    this.ToggleModifyMode)
                 endif
-            elseif idx >= 0 && this._IsKey(key, CONSTANTS.KEYS.PIN_DELETE)
+            elseif idx >= 0 && this._IsKey(key, g:poplar.keys.PIN_DELETE)
                 var info = this._GetPathIdxFromIdx(idx)
                 if info.idx >= 0
                     var path = info.valid
@@ -186,7 +185,7 @@ export class PinWindow extends basewindow.BaseWindow
                                    function(this._CallbackUnpin, [info.valid, info.idx]),
                                    this.ToggleModifyMode)
                 endif
-            elseif this._IsKey(key, CONSTANTS.KEYS.PIN_ADD)
+            elseif this._IsKey(key, g:poplar.keys.PIN_ADD)
                 var text = ''
                 if idx >= 0
                     var info = this._GetPathIdxFromIdx(idx)
@@ -198,23 +197,23 @@ export class PinWindow extends basewindow.BaseWindow
                 endif
                 inputline.Open(text, 'add a pin', this._CallbackPin, this.ToggleModifyMode)
             endif
-        elseif idx >= 0 && this._IsKey(key, CONSTANTS.KEYS.PIN_OPEN)
+        elseif idx >= 0 && this._IsKey(key, g:poplar.keys.PIN_OPEN)
             if this._TryOpenFile(idx, 'drop')
                 return this._CallbackExit()
             endif
-        elseif idx >= 0 && this._IsKey(key, CONSTANTS.KEYS.PIN_OPEN_SPLIT)
+        elseif idx >= 0 && this._IsKey(key, g:poplar.keys.PIN_OPEN_SPLIT)
             if this._TryOpenFile(idx, 'split')
                 return this._CallbackExit()
             endif
-        elseif idx >= 0 && this._IsKey(key, CONSTANTS.KEYS.PIN_OPEN_VSPLIT)
+        elseif idx >= 0 && this._IsKey(key, g:poplar.keys.PIN_OPEN_VSPLIT)
             if this._TryOpenFile(idx, 'vsplit')
                 return this._CallbackExit()
             endif
-        elseif idx >= 0 && this._IsKey(key, CONSTANTS.KEYS.PIN_OPEN_TAB)
+        elseif idx >= 0 && this._IsKey(key, g:poplar.keys.PIN_OPEN_TAB)
             if this._TryOpenFile(idx, 'tab drop')
                 return this._CallbackExit()
             endif
-        elseif idx >= 0 && this._IsKey(key, CONSTANTS.KEYS.PIN_YANK_PATH)
+        elseif idx >= 0 && this._IsKey(key, g:poplar.keys.PIN_YANK_PATH)
             var info = this._GetPathIdxFromIdx(idx)
             if info.idx >= 0
                 var path = info.valid
@@ -223,7 +222,7 @@ export class PinWindow extends basewindow.BaseWindow
                 path->setreg('+')
                 this._Log($"saved '{path}' to register '+'")
             endif
-        elseif idx >= 0 && this._IsKey(key, CONSTANTS.KEYS.PIN_MOVE_DOWN)
+        elseif idx >= 0 && this._IsKey(key, g:poplar.keys.PIN_MOVE_DOWN)
             var info = this._GetPathIdxFromIdx(idx)
             if info.valid && info.idx >= 0 && info.idx + 1 < this._valid->len()
                 [this._valid[info.idx], this._valid[info.idx + 1]] = [
@@ -235,7 +234,7 @@ export class PinWindow extends basewindow.BaseWindow
                 'j'->feedkeys()
             endif
             this.SoftRefresh()
-        elseif idx >= 0 && this._IsKey(key, CONSTANTS.KEYS.PIN_MOVE_UP)
+        elseif idx >= 0 && this._IsKey(key, g:poplar.keys.PIN_MOVE_UP)
             var info = this._GetPathIdxFromIdx(idx)
             if info.valid && info.idx > 0 && this._valid->len() > 1
                 [this._valid[info.idx], this._valid[info.idx - 1]] = [
@@ -247,11 +246,11 @@ export class PinWindow extends basewindow.BaseWindow
                 'k'->feedkeys()
             endif
             this.SoftRefresh()
-        elseif this._IsKey(key, CONSTANTS.KEYS.PIN_MODIFY_MODE)
+        elseif this._IsKey(key, g:poplar.keys.PIN_MODIFY_MODE)
             this.ToggleModifyMode()
-        elseif this._IsKey(key, CONSTANTS.KEYS.PIN_REFRESH)
+        elseif this._IsKey(key, g:poplar.keys.PIN_REFRESH)
             this.HardRefresh()
-        elseif this._IsKey(key, CONSTANTS.KEYS.PIN_TOGGLE_HELP)
+        elseif this._IsKey(key, g:poplar.keys.PIN_TOGGLE_HELP)
             this._show_help = !this._show_help
             this.SetLines(this._lines, false)
             if this._show_help
@@ -380,22 +379,22 @@ export class PinWindow extends basewindow.BaseWindow
 
     def _InitHelpText() # {{{
         this._helptext = [
-            this._FmtHelp('toggle help',         CONSTANTS.KEYS.PIN_TOGGLE_HELP),
-            this._FmtHelp('switch to tree menu', CONSTANTS.KEYS.SWITCH_WINDOW_L),
-            this._FmtHelp('exit poplar',         CONSTANTS.KEYS.EXIT),
-            this._FmtHelp('open',                CONSTANTS.KEYS.PIN_OPEN),
-            this._FmtHelp('open in split',       CONSTANTS.KEYS.PIN_OPEN_SPLIT),
-            this._FmtHelp('open in vsplit',      CONSTANTS.KEYS.PIN_OPEN_VSPLIT),
-            this._FmtHelp('open in tab',         CONSTANTS.KEYS.PIN_OPEN_TAB),
-            this._FmtHelp('refresh',             CONSTANTS.KEYS.PIN_REFRESH),
-            this._FmtHelp('move item down',      CONSTANTS.KEYS.PIN_MOVE_DOWN),
-            this._FmtHelp('move item up',        CONSTANTS.KEYS.PIN_MOVE_UP),
-            this._FmtHelp('yank full path',      CONSTANTS.KEYS.PIN_YANK_PATH),
-            this._FmtHelp('enter modify mode',   CONSTANTS.KEYS.PIN_MODIFY_MODE),
+            this._FmtHelp('toggle help',         g:poplar.keys.PIN_TOGGLE_HELP),
+            this._FmtHelp('switch to tree menu', g:poplar.keys.SWITCH_WINDOW_L),
+            this._FmtHelp('exit poplar',         g:poplar.keys.EXIT),
+            this._FmtHelp('open',                g:poplar.keys.PIN_OPEN),
+            this._FmtHelp('open in split',       g:poplar.keys.PIN_OPEN_SPLIT),
+            this._FmtHelp('open in vsplit',      g:poplar.keys.PIN_OPEN_VSPLIT),
+            this._FmtHelp('open in tab',         g:poplar.keys.PIN_OPEN_TAB),
+            this._FmtHelp('refresh',             g:poplar.keys.PIN_REFRESH),
+            this._FmtHelp('move item down',      g:poplar.keys.PIN_MOVE_DOWN),
+            this._FmtHelp('move item up',        g:poplar.keys.PIN_MOVE_UP),
+            this._FmtHelp('yank full path',      g:poplar.keys.PIN_YANK_PATH),
+            this._FmtHelp('enter modify mode',   g:poplar.keys.PIN_MODIFY_MODE),
             this._FmtHelp('---- MODIFY MODE ----'),
-            this._FmtHelp('add pin',             CONSTANTS.KEYS.PIN_ADD),
-            this._FmtHelp('modify pin',          CONSTANTS.KEYS.PIN_MODIFY),
-            this._FmtHelp('delete pin',          CONSTANTS.KEYS.PIN_DELETE),
+            this._FmtHelp('add pin',             g:poplar.keys.PIN_ADD),
+            this._FmtHelp('modify pin',          g:poplar.keys.PIN_MODIFY),
+            this._FmtHelp('delete pin',          g:poplar.keys.PIN_DELETE),
             {}
         ]
     enddef # }}}

@@ -1,7 +1,5 @@
 vim9script
 
-import './constants.vim' as CONSTANTS
-
 # count composing chars:  strchars()
 #                         strcharpart()
 # ignore composing chars: strcharlne()
@@ -28,7 +26,7 @@ export def Open(starting_text: string,
     }
     g:poplar.input.id = ''->popup_create({
         title: $' {title} ',
-        zindex: CONSTANTS.Z_WIN_INPUT,
+        zindex: g:poplar.dims.Z_WIN_INPUT,
         highlight: 'Normal',
         minwidth: g:poplar.input.width,
         maxwidth: g:poplar.input.width,
@@ -147,7 +145,7 @@ def FilterNonPrintable(key: string): bool
         endif
         g:poplar.input->filter((_, _) => false) # clear dict
         return true
-    elseif CONSTANTS.K_IGNORE->index(key) >= 0
+    elseif g:poplar.k_ignore->index(key) >= 0
         return true
     # ---------------------------- fallthrough -------------------------------
     elseif key ==? '<bs>'

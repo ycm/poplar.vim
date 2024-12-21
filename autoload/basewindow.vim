@@ -1,8 +1,6 @@
 vim9script
 
-import './constants.vim' as CONSTANTS
 
-# BaseWindows should always be doubletons
 export class BaseWindow
     var _id = -1
     var _on_left: bool
@@ -21,7 +19,7 @@ export class BaseWindow
             col: &columns / 2 + 2,
             # line: (&lines - maxheight) / 2 - 1, # <TODO> reflect true height here
             firstline: this.savestate->get('firstline', 1),
-            minwidth: CONSTANTS.MIN_WIDTH,
+            minwidth: g:poplar.dims.MIN_WIDTH,
             maxwidth: (&columns / 2) - 8,
             minheight: maxheight / 2, # <TODO> fix this logic
             maxheight: maxheight / 2,
@@ -44,7 +42,7 @@ export class BaseWindow
 
     def _BaseFilter(id: number, key: string): bool # {{{
         var key_norm = key->keytrans()
-        if this._IsKey(key_norm, CONSTANTS.KEYS.EXIT)
+        if this._IsKey(key_norm, g:poplar.keys.EXIT)
             if this._show_modify_mode
                 this.ToggleModifyMode()
                 return true
@@ -64,8 +62,8 @@ export class BaseWindow
                 return true
             endif
             return this._id->popup_filter_menu(key)
-        elseif (!this._show_modify_mode && this._IsKey(key_norm, CONSTANTS.KEYS.SWITCH_WINDOW_L) && !this._on_left)
-            || (!this._show_modify_mode && this._IsKey(key_norm, CONSTANTS.KEYS.SWITCH_WINDOW_R) && this._on_left)
+        elseif (!this._show_modify_mode && this._IsKey(key_norm, g:poplar.keys.SWITCH_WINDOW_L) && !this._on_left)
+            || (!this._show_modify_mode && this._IsKey(key_norm, g:poplar.keys.SWITCH_WINDOW_R) && this._on_left)
             return this._CallbackSwitchFocus()
         endif
         return this._SpecificFilter(key_norm)
@@ -77,13 +75,13 @@ export class BaseWindow
         if this._show_modify_mode
             this._show_modify_mode = false
             this._id->popup_setoptions({
-                title: title[: -(CONSTANTS.MODIFY_TEXT->strcharlen()) - 2],
+                title: title[: -(g:poplar.modify_text->strcharlen()) - 2],
                 highlight: 'Normal',
             })
         else
             this._show_modify_mode = true
             this._id->popup_setoptions({
-                title: $'{title}{CONSTANTS.MODIFY_TEXT} ',
+                title: $'{title}{g:poplar.modify_text} ',
                 highlight: 'Keyword',
             })
         endif

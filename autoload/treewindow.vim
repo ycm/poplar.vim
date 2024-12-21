@@ -109,6 +109,10 @@ export class TreeWindow extends basewindow.BaseWindow
             else
                 this._pin_callbacks.TogglePin(node.path)
             endif
+        elseif idx >= 0 && this._IsKey(key, CONSTANTS.KEYS.TREE_YANK_PATH)
+            var node = this._tree.GetNodeAtDisplayIndex(idx)
+            node.path->setreg('+')
+            this._Log($"saved '{node.path}' to register '+'")
         elseif this._IsKey(key, CONSTANTS.KEYS.TREE_TOGGLE_HIDDEN)
             this._tree.ToggleHidden()
             this.SetLines(this._tree.GetPrettyFormatLines())
@@ -300,14 +304,14 @@ export class TreeWindow extends basewindow.BaseWindow
             this._FmtHelp('reset cwd as root',      CONSTANTS.KEYS.TREE_CWD_ROOT),
             this._FmtHelp('refresh',                CONSTANTS.KEYS.TREE_REFRESH),
             this._FmtHelp('show/hide hidden files', CONSTANTS.KEYS.TREE_TOGGLE_HIDDEN),
-            this._FmtHelp('yank full path',         CONSTANTS.KEYS.TREE_YANK_PATH), # <TODO>
+            this._FmtHelp('yank full path',         CONSTANTS.KEYS.TREE_YANK_PATH),
             this._FmtHelp('pin/unpin file',         CONSTANTS.KEYS.TREE_TOGGLE_PIN),
             this._FmtHelp('enter modify mode',      CONSTANTS.KEYS.TREE_MODIFY_MODE),
             this._FmtHelp('---- MODIFY MODE ----'),
             this._FmtHelp('add file/dir',           CONSTANTS.KEYS.TREE_ADD_NODE),
             this._FmtHelp('delete file/dir',        CONSTANTS.KEYS.TREE_DELETE_NODE),
             this._FmtHelp('move/rename',            CONSTANTS.KEYS.TREE_MOVE_NODE),
-            this._FmtHelp('change permissions',     CONSTANTS.KEYS.TREE_CHMOD)
+            this._FmtHelp('change permissions',     CONSTANTS.KEYS.TREE_CHMOD),
             {}
         ]
     enddef # }}}

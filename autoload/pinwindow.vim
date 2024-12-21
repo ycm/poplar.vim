@@ -214,6 +214,15 @@ export class PinWindow extends basewindow.BaseWindow
             if this._TryOpenFile(idx, 'tab drop')
                 return this._CallbackExit()
             endif
+        elseif idx >= 0 && this._IsKey(key, CONSTANTS.KEYS.PIN_YANK_PATH)
+            var info = this._GetPathIdxFromIdx(idx)
+            if info.idx >= 0
+                var path = info.valid
+                        ? this._valid[info.idx]
+                        : this._invalid[info.idx]
+                path->setreg('+')
+                this._Log($"saved '{path}' to register '+'")
+            endif
         elseif idx >= 0 && this._IsKey(key, CONSTANTS.KEYS.PIN_MOVE_DOWN)
             var info = this._GetPathIdxFromIdx(idx)
             if info.valid && info.idx >= 0 && info.idx + 1 < this._valid->len()
@@ -382,7 +391,7 @@ export class PinWindow extends basewindow.BaseWindow
             this._FmtHelp('move item down',      CONSTANTS.KEYS.PIN_MOVE_DOWN),
             this._FmtHelp('move item up',        CONSTANTS.KEYS.PIN_MOVE_UP),
             this._FmtHelp('yank full path',      CONSTANTS.KEYS.PIN_YANK_PATH),
-            this._FmtHelp('enter modify mode',   CONSTANTS.KEYS.PIN_MODIFY_MODE), # <TODO>
+            this._FmtHelp('enter modify mode',   CONSTANTS.KEYS.PIN_MODIFY_MODE),
             this._FmtHelp('---- MODIFY MODE ----'),
             this._FmtHelp('add pin',             CONSTANTS.KEYS.PIN_ADD),
             this._FmtHelp('modify pin',          CONSTANTS.KEYS.PIN_MODIFY),

@@ -207,6 +207,7 @@ export class TreeWindow extends basewindow.BaseWindow
                 this._LogErr($'failed to move directory {from}.')
             else
                 this._pin_callbacks.UpdateDir(from, dest)
+                this._tree.CheckRenamedDirExpand(from, dest)
                 var bufs = getbufinfo()
                         ->filter((_, b) => b.name =~ $'^{from}/')
                         ->mapnew((_, b) => [b.bufnr, b.name[from->len() + 1 :]])

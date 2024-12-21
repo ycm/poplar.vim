@@ -50,6 +50,17 @@ export class FileTree
     enddef
 
 
+    def CheckRenamedDirExpand(from: string, to: string)
+        if to == '/'
+            return
+        endif
+        if this._expanded_paths->has_key(from)
+            var newdir = to->slice(0, to->strcharlen() - 1)
+            this._expanded_paths[newdir] = null_string
+        endif
+    enddef
+
+
     def RaiseRoot()
         if this.root.path == '/'
             return

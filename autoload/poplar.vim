@@ -103,9 +103,13 @@ endfor # }}}
 
 
 export def Run()
+    g:poplar.user_pmenu = 'Pmenu'->hlget()
     g:poplar.user_pmenusel = 'PmenuSel'->hlget()
-    if 'PoplarSel'->hlexists()
-        highlight! link PmenuSel PoplarSel
+    if 'PoplarMenuSel'->hlexists()
+        highlight! link PmenuSel PoplarMenuSel
+    endif
+    if 'PoplarMenu'->hlexists()
+        highlight! link Pmenu PoplarMenu
     endif
 
     if !g:poplar->has_key('pin_win')
@@ -159,6 +163,7 @@ def Exit(): bool
     g:poplar.pin_win.SaveCurrentState()
     g:poplar.pin_win.GetId()->popup_close()
     g:poplar.pin_win.Write()
+    g:poplar.user_pmenu->hlset()
     g:poplar.user_pmenusel->hlset()
     return true
 enddef

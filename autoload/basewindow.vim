@@ -28,7 +28,7 @@ export class BaseWindow
             border: [],
             borderchars: ['─', '│', '─', '│', '╭', '╮', '╯', '╰'],
             padding: [0, 1, 0, 1],
-            highlight: 'Normal',
+            highlight: 'Pmenu',
             mapping: false
         }
 
@@ -77,7 +77,7 @@ export class BaseWindow
             this._show_modify_mode = false
             this._id->popup_setoptions({
                 title: title[: -(g:poplar.modify_text->strcharlen()) - 2],
-                highlight: 'Normal',
+                highlight: 'Pmenu',
             })
         else
             this._show_modify_mode = true

@@ -55,7 +55,7 @@ export const KEYS = { # {{{
     TREE_ADD_NODE:      'a',
     TREE_DELETE_NODE:   'd',
     TREE_MOVE_NODE:     'm',
-    TREE_CHMOD:         'x'
+    TREE_CHMOD:         'P'
 } # }}}
 
 export const MODIFY_TEXT = '(modify-mode)'

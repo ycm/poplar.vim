@@ -39,23 +39,35 @@ export class TreeWindow extends basewindow.BaseWindow
                                this._CallbackAddNode,
                                this.ToggleModifyMode)
             elseif this._IsKey(key, CONSTANTS.KEYS.TREE_MOVE_NODE)
-                if node.path == getcwd()
-                    this._LogErr('cannot modify cwd.')
-                    this.ToggleModifyMode()
-                    return false
+                if getcwd() =~ $'^{node.path}/'
+                    this._LogErr('cannot move dir containing cwd.')
+                elseif node.path == getcwd()
+                    this._LogErr('cannot move cwd.')
+                else
+                    inputline.Open(node.path, 'move/rename node',
+                                   function(this._CallbackMoveNode, [node.path]),
+                                   this.ToggleModifyMode)
                 endif
-                inputline.Open(node.path, 'move/rename node',
-                               function(this._CallbackMoveNode, [node.path]),
-                               this.ToggleModifyMode)
             elseif this._IsKey(key, CONSTANTS.KEYS.TREE_DELETE_NODE)
-                if node.path == getcwd()
-                    this._LogErr('cannot modify cwd.')
-                    this.ToggleModifyMode()
-                    return false
+                if getcwd() =~ $'^{node.path}/'
+                    this._LogErr('cannot delete dir containing cwd.')
+                elseif node.path == getcwd()
+                    this._LogErr('cannot delete cwd.')
+                else
+                    inputline.Open('', $"delete {node.path}? ('yes' to confirm)",
+                                   function(this._CallbackDeleteNode, [node.path]),
+                                   this.ToggleModifyMode)
                 endif
-                inputline.Open('', $"delete {node.path}? ('yes' to confirm)",
-                               function(this._CallbackDeleteNode, [node.path]),
-                               this.ToggleModifyMode)
+            elseif this._IsKey(key, CONSTANTS.KEYS.TREE_CHMOD)
+                if getcwd() =~ $'^{node.path}/'
+                    this._LogErr('cannot call chmod on dir containing cwd.')
+                elseif node.path == getcwd()
+                    this._LogErr('cannot call chmod on cwd.')
+                else
+                    inputline.Open('', $'enter chmod arguments',
+                                   function(this._CallbackChmodNode, [node.path]),
+                                   this.ToggleModifyMode)
+                endif
             endif
         elseif idx >= 0 && this._IsKey(key, CONSTANTS.KEYS.TREE_OPEN) # {{{
             var node = this._tree.GetNodeAtDisplayIndex(idx)
@@ -126,9 +138,25 @@ export class TreeWindow extends basewindow.BaseWindow
     enddef
 
 
-    def _CallbackInputLineEnter(text: string)
-        this._Log($'placeholder received <{text}>')
-    enddef
+    def _CallbackChmodNode(path: string, text: string) # {{{
+        var args = text->trim()
+        if args == ''
+            this._Log('operation aborted.')
+            return
+        endif
+
+        var cmd = $'chmod {args} {path}'
+        var err = cmd->system()->split('\n')
+
+        if err->empty()
+            this._Log($'changed permissions to {args} for node: {path}.')
+        else
+            v:errors->extend(err)
+            this._LogErr($"check v:errors -- could not change permissions to {args} for node: {path}.")
+        endif
+        this._tree.HardRefresh()
+        this.SetLines(this._tree.GetPrettyFormatLines())
+    enddef # }}}
 
 
     def _CallbackDeleteNode(path: string, confirm: string) # {{{
@@ -279,7 +307,7 @@ export class TreeWindow extends basewindow.BaseWindow
             this._FmtHelp('add file/dir',           CONSTANTS.KEYS.TREE_ADD_NODE),
             this._FmtHelp('delete file/dir',        CONSTANTS.KEYS.TREE_DELETE_NODE),
             this._FmtHelp('move/rename',            CONSTANTS.KEYS.TREE_MOVE_NODE),
-            this._FmtHelp('change permissions',     CONSTANTS.KEYS.TREE_CHMOD), # <TODO>
+            this._FmtHelp('change permissions',     CONSTANTS.KEYS.TREE_CHMOD)
             {}
         ]
     enddef # }}}

@@ -29,9 +29,9 @@ export def Run()
     if !g:poplar->has_key('tree_win')
         g:poplar['tree_win'] = treewindow.TreeWindow.new(true, SwitchFocus, Exit, {
             Refresh: g:poplar.pin_win.HardRefresh,
-            TogglePin: g:poplar.pin_win.CallbackTogglePin,
-            UpdatePin: g:poplar.pin_win.CallbackUpdatePin,
-            UpdateDir: g:poplar.pin_win.CallbackUpdateDir
+            TogglePin: g:poplar.pin_win.TreeCallbackTogglePin,
+            UpdatePin: g:poplar.pin_win.TreeCallbackUpdatePin,
+            UpdateDir: g:poplar.pin_win.TreeCallbackUpdateDir
         })
     endif
 

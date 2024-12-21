@@ -16,6 +16,17 @@ export class PinWindow extends basewindow.BaseWindow
     enddef
 
 
+    def SoftRefresh()
+        this.SetLines(this._FormatLines())
+    enddef
+
+
+    def HardRefresh()
+        this._RefreshPaths()
+        this.SoftRefresh()
+    enddef
+
+
     def _LoadPaths() # {{{
         if !'.poplar.txt'->filereadable()
             return
@@ -33,18 +44,7 @@ export class PinWindow extends basewindow.BaseWindow
     enddef # }}}
 
 
-    def HardRefresh()
-        this._RefreshPaths()
-        this.SoftRefresh()
-    enddef
-
-
-    def SoftRefresh()
-        this.SetLines(this._FormatLines())
-    enddef
-
-
-    def CallbackUpdateDir(from: string, to: string)
+    def TreeCallbackUpdateDir(from: string, to: string)
         var oldpath = from->fnamemodify(':p')
         var newpath = to->fnamemodify(':p')
         if oldpath[-1] != '/'
@@ -62,7 +62,7 @@ export class PinWindow extends basewindow.BaseWindow
     enddef
 
 
-    def CallbackTogglePin(path: string)
+    def TreeCallbackTogglePin(path: string)
         if !path->filereadable()
             return
         endif
@@ -80,7 +80,7 @@ export class PinWindow extends basewindow.BaseWindow
     enddef
 
 
-    def CallbackUpdatePin(from: string, to: string) # {{{
+    def TreeCallbackUpdatePin(from: string, to: string) # {{{
         var idx = this._valid->index(from->fnamemodify(':p'))
         if idx >= 0
             this._valid[idx] = to->fnamemodify(':p')
@@ -95,6 +95,7 @@ export class PinWindow extends basewindow.BaseWindow
             try
                 paths->writefile('.poplar.txt')
             catch
+                this._LogErr('unable to write to .poplar.txt')
             endtry
         elseif !paths->empty()
             try
@@ -381,7 +382,7 @@ export class PinWindow extends basewindow.BaseWindow
             this._FmtHelp('move item down',      CONSTANTS.KEYS.PIN_MOVE_DOWN),
             this._FmtHelp('move item up',        CONSTANTS.KEYS.PIN_MOVE_UP),
             this._FmtHelp('yank full path',      CONSTANTS.KEYS.PIN_YANK_PATH),
-            this._FmtHelp('enter modify mode',   CONSTANTS.KEYS.PIN_MODIFY_MODE),
+            this._FmtHelp('enter modify mode',   CONSTANTS.KEYS.PIN_MODIFY_MODE), # <TODO>
             this._FmtHelp('---- MODIFY MODE ----'),
             this._FmtHelp('add pin',             CONSTANTS.KEYS.PIN_ADD),
             this._FmtHelp('modify pin',          CONSTANTS.KEYS.PIN_MODIFY),

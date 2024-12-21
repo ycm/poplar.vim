@@ -309,8 +309,8 @@ export class TreeWindow extends basewindow.BaseWindow
             this._FmtHelp('enter modify mode',      g:poplar.keys.TREE_MODIFY_MODE),
             this._FmtHelp('---- MODIFY MODE ----'),
             this._FmtHelp('add file/dir',           g:poplar.keys.TREE_ADD_NODE),
+            this._FmtHelp('move/rename file/dir',   g:poplar.keys.TREE_MOVE_NODE),
             this._FmtHelp('delete file/dir',        g:poplar.keys.TREE_DELETE_NODE),
-            this._FmtHelp('move/rename',            g:poplar.keys.TREE_MOVE_NODE),
             this._FmtHelp('change permissions',     g:poplar.keys.TREE_CHMOD),
             {}
         ]

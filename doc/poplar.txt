@@ -17,8 +17,9 @@ CONTENTS                                                    *poplar-contents*
                  1. Introduction........|poplar-intro|
                  2. Usage...............|poplar-usage|
                  3. Configuration.......|poplar-configuration|
-                 4. Keys................|poplar-keys|
-		 5. Troubleshooting.....|poplar-troubleshooting|
+                 4. Colors..............|poplar-colors|
+                 5. Keys................|poplar-keys|
+                 6. Troubleshooting.....|poplar-troubleshooting|
 
 ==============================================================================
 INTRODUCTION                                                   *poplar-intro*
@@ -52,6 +53,7 @@ now trivial to avoid this problem.
 
 ==============================================================================
 USAGE                                                          *poplar-usage*
+                                                                    *:Poplar*
 
 Poplar is very easy to use. Just invoke the menu with `:Poplar`, or assign it
 to a mapping.
@@ -67,9 +69,9 @@ move/rename. In the filetree, you can also type `P` in modify mode to invoke a
 
 Operations are mostly self-explanatory, but some notes:
 
- * `<cr>` and `t` are `:drop` and `:tab drop` calls, respectively.
- * `i` and `v` are `:split` and `:vsplit` calls, respectively, which means they
-   are affected by `&splitright` and `&splitbelow`.
+ * `<cr>` and `t` are |:drop| and |:tab| (drop) calls, respectively.
+ * `i` and `v` are |:split| and |:vsplit| calls, respectively, which means they
+   are affected by |splitright| and |splitbelow|.
  * `y` in either menu yanks the full path of the selected file. The path will
    get stored in the `+` register by default.
  * `I` shows hidden files (that is, files that start with a dot). I have no
@@ -90,12 +92,12 @@ CONFIGURATION                                          *poplar-configuration*
 Every config is stored in a global dictionary called `g:poplar`. Here are the
 defaults for the configs that you can modify: >
     g:poplar = {
-	keys: KEYS,
-	yankreg: '+',
-	verbosity: 'all',
-	diropensymb: 'v',
-	dirclosedsymb: '>',
-	filename: '.poplar.txt',
+        keys: KEYS,
+        yankreg: '+',
+        verbosity: 'all',
+        diropensymb: 'v',
+        dirclosedsymb: '>',
+        filename: '.poplar.txt',
     }
 <
 `KEYS` is itself a lengthy dictionary described in |poplar-keys|. For the
@@ -105,70 +107,94 @@ other configs:
     * `all`: print all messages
     * `quiet`: only print errors
     * `silent`: don't print anything
-    * note that any messages that get `echo`'d are `echomsg`, so you can check
-      `:messages` (unless you set `verbosity` to `silent`).
+    * note that any messages that get echoed are |:echomsg|, so you can check
+      |:messages| (unless you set `verbosity` to `silent`).
  * `diropensymb` and `dirclosedsymb` are pretty obvious. Use whatever symbols
    you like that are supported by your font.
  * `filename` is the file that the pin menu will write to. This should always
    relative to the current working directory.
 
 ==============================================================================
+COLORS                                                        *poplar-colors*
+
+Below is a list of the colors that Poplar can use. If not defined, Poplar
+will use fallback highlight groups instead, so as not to clutter the
+namespace.
+
+ * `PoplarMenu`     (defaults to `Pmenu`)
+ * `PoplarMenuSel`  (defaults to `PmenuSel`)
+ * `PoplarTreeDir`  (tries to find `NERDTreeDir`, otherwise uses `Directory`)
+ * `PoplarTreeCWD`  (tries to find `NERDTreeCWD`, otherwise uses `Keyword`)
+ * `PoplarTreeFile` (tries to find `NERDTreeFile`, otherwise uses `Identifier`)
+ * `PoplarTreeExecFile` (tries to find `NERDTreeExecFile`, otherwise uses
+     `Keyword`)
+ * `PoplarInputText`   (defaults to `Normal`)
+ * `PoplarHelpText`    (defaults to `Comment`)
+ * `PoplarHelpKey`     (defaults to `Keyword`)
+ * `PoplarPinNotFound` (defaults to `ErrorMsg`)
+
+Additionally, to show the cursor in the inputline, Poplar defines a highlight
+group called `PoplarInv`, which is just `cterm=inverse` `gui=inverse`. If you
+wish to override this, you should define `PoplarInputCursor` instead. The
+rationale behind defining `PoplarInv` is to give Poplar a reasonable fallback.
+
+==============================================================================
 KEYS                                                            *poplar-keys*
 
 The following are default keys: >
     var KEYS = {
-	SWITCH_WINDOW_L:    'h',
-	SWITCH_WINDOW_R:    'l',
-	EXIT:               '<esc>',
-	PIN_TOGGLE_HELP:    '?',
-	PIN_OPEN:           '<cr>',
-	PIN_OPEN_SPLIT:     'i',
-	PIN_OPEN_VSPLIT:    'v',
-	PIN_OPEN_TAB:       't',
-	PIN_MODIFY_MODE:    'm',
-	PIN_ADD:            'a',
-	PIN_MODIFY:         'm',
-	PIN_DELETE:         'd',
-	PIN_REFRESH:        'R',
-	PIN_MOVE_DOWN:      'J',
-	PIN_MOVE_UP:        'K',
-	PIN_YANK_PATH:      'y',
-	TREE_TOGGLE_HELP:   '?',
-	TREE_OPEN:          '<cr>',
-	TREE_OPEN_SPLIT:    'i',
-	TREE_OPEN_VSPLIT:   'v',
-	TREE_OPEN_TAB:      't',
-	TREE_RAISE_ROOT:    'u',
-	TREE_CHROOT:        'c',
-	TREE_CWD_ROOT:      'C',
-	TREE_REFRESH:       'R',
-	TREE_TOGGLE_HIDDEN: 'I',
-	TREE_YANK_PATH:     'y',
-	TREE_TOGGLE_PIN:    'p',
-	TREE_MODIFY_MODE:   'm',
-	TREE_ADD_NODE:      'a',
-	TREE_MOVE_NODE:     'm',
-	TREE_DELETE_NODE:   'd',
-	TREE_CHMOD:         'P'
+        SWITCH_WINDOW_L:    'h',
+        SWITCH_WINDOW_R:    'l',
+        EXIT:               '<esc>',
+        PIN_TOGGLE_HELP:    '?',
+        PIN_OPEN:           '<cr>',
+        PIN_OPEN_SPLIT:     'i',
+        PIN_OPEN_VSPLIT:    'v',
+        PIN_OPEN_TAB:       't',
+        PIN_MODIFY_MODE:    'm',
+        PIN_ADD:            'a',
+        PIN_MODIFY:         'm',
+        PIN_DELETE:         'd',
+        PIN_REFRESH:        'R',
+        PIN_MOVE_DOWN:      'J',
+        PIN_MOVE_UP:        'K',
+        PIN_YANK_PATH:      'y',
+        TREE_TOGGLE_HELP:   '?',
+        TREE_OPEN:          '<cr>',
+        TREE_OPEN_SPLIT:    'i',
+        TREE_OPEN_VSPLIT:   'v',
+        TREE_OPEN_TAB:      't',
+        TREE_RAISE_ROOT:    'u',
+        TREE_CHROOT:        'c',
+        TREE_CWD_ROOT:      'C',
+        TREE_REFRESH:       'R',
+        TREE_TOGGLE_HIDDEN: 'I',
+        TREE_YANK_PATH:     'y',
+        TREE_TOGGLE_PIN:    'p',
+        TREE_MODIFY_MODE:   'm',
+        TREE_ADD_NODE:      'a',
+        TREE_MOVE_NODE:     'm',
+        TREE_DELETE_NODE:   'd',
+        TREE_CHMOD:         'P'
     }
 <
-When a keystroke is detected, the raw key is formatted by `keytrans()`. For
-single-character keys (`j`, 'I', '?', etc.), the Poplar's internal comparison
+When a keystroke is detected, the raw key is formatted by |keytrans()|. For
+single-character keys (`j`, `I`, `?`, etc.), the Poplar's internal comparison
 is case-sensitive. Otherwise, the capitalization doesn't matter.
 
-An apparent quirk with `keytrans()` is that the space character, together with
+An apparent quirk with |keytrans()| is that the space character, together with
 `<` are represented as `<Space>` and `<lt>`. The other printable ASCII
 characters seem to be the characters themselves, though I haven't looked into
 it very much.
 
 If you want to set `Ctrl-B` as a key for something, but are unsure how to
-represent it as a string, you may check it with `keytrans()`: >
+represent it as a string, you may check it with |keytrans()|: >
     :echo keytrans('^B')
 <
 which outputs `<C-B>`. Please note that `^B` is the literal `Ctrl-B` character
 obtained using `Ctrl-V`.
 
-Non-ASCII characters are okay as well. Poplar uses `strcharlen()` for string
+Non-ASCII characters are okay as well. Poplar uses |strcharlen()| for string
 length, and `ä` and `Ä` are both length 1, so they are recognized as distinct
 keys.
 
@@ -179,7 +205,7 @@ I haven't tested Poplar on anything besides my personal machine, so I'm not
 aware of any problem areas. Here are a couple things I can think of:
 
  * Ambiguous-width glyphs not displaying correctly
-   Please check `&ambiwidth`, and verify that your terminal emulator supports
+   Please check |ambiwidth|, and verify that your terminal emulator supports
    ambiguous width characters.
  * Can't move, rename, or delete certain files/directories
    Please note Poplar does not support the following:

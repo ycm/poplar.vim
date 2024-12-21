@@ -2,7 +2,7 @@
 
 <p align="center">🌳 Filetree and pinned files menu using native Vim popups. 📌</p>
 
-Demo ([asciicinema](https://asciinema.org), not a screen recording):
+[asciinema](https://asciinema.org) (not a screen recording):
 
 ![demogif](https://github.com/ycm/poplar.vim/blob/master/demo/demo.gif)
 
@@ -10,16 +10,16 @@ Screenshot:
 
 ![demopng](https://github.com/ycm/poplar.vim/blob/master/demo/demo.png)
 
-[NERDTree](https://github.com/preservim/nerdtree) is great but using native Vim popups fits my workflow a lot better. In particular,
+[NERDTree](https://github.com/preservim/nerdtree) is great but I think popups fit my workflow a lot better. In particular,
 
 - I don't want to manually toggle to show/hide the filetree.
-- I especially don't enjoy how the NERDTree buffer interferes with window splits and sessions.
-- An active NERDTree buffer causes the default tabline to display `NERD_tree_tab_x`, which is unhelpful.
+- Esthetically the NERDTree menu dialog is jarring.
+- An active NERDTree buffer causes my (default) tabline to display `NERD_tree_tab_x`, which is unhelpful.
+- I especially don't enjoy how NERDTree buffers interfere with window splits and sessions.
 
 Popup windows have come a long way since being added in 8.2; this plugin also demonstrates some ways to exploit their functionality, maybe slightly beyond what they were intended to do.
 
 ## Features
-
 
 Poplar offers a filetree that also interacts nicely with a side-by-side **pinned items** menu, similar to NERDTree bookmarks or [harpoon](https://github.com/ThePrimeagen/harpoon/).
 
@@ -76,8 +76,8 @@ g:poplar = {
         SWITCH_WINDOW_R: '<c-l>',
     },
     yankreg: '0',
-	diropensymb: '▾',
-	dirclosedsymb: '▸',
+    diropensymb: '▾',
+    dirclosedsymb: '▸',
 }
 ```
 See `:h poplar` for a full list of configs and their defaults.
@@ -89,7 +89,8 @@ Unlike NERDTree, which heavily pollutes the namespace (you can verify this with 
 If you have NERDTree colors defined, Poplar will use those. Alternatively you can override them and define your own colors. Below are the highlight groups you can define:
 
 ```
-PoplarSel
+PoplarMenu
+PoplarMenuSel
 PoplarTreeDir
 PoplarTreeCWD
 PoplarTreeFile

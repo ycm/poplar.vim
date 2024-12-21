@@ -1,7 +1,7 @@
 *poplar.txt* popup filetree and pinned files menu
 *poplar* *poplar.vim*
 
-Author: A. Chuming Yang <https://github.com/ycm>
+Author: A. Yang Chuming <https://github.com/ycm>
 License: MIT License
                                                                   
             ██████╗  ██████╗ ██████╗ ██╗      █████╗ ██████╗ 
@@ -51,6 +51,10 @@ pinned file menus, which is that renaming a file or directory will break
 existing pins. Since Poplar manages both pinned files and the filetree, it is
 now trivial to avoid this problem.
 
+Please note that Poplar will likely not work on Windows. I don't know how
+Windows files and paths work, and I don't have have a need to figure that out
+currently.
+
 ==============================================================================
 USAGE                                                          *poplar-usage*
                                                                     *:Poplar*
@@ -74,8 +78,6 @@ Operations are mostly self-explanatory, but some notes:
    are affected by |splitright| and |splitbelow|.
  * `y` in either menu yanks the full path of the selected file. The path will
    get stored in the `+` register by default.
- * `I` shows hidden files (that is, files that start with a dot). I have no
-   plans to support Windows's hidden files, since I don't know how those work.
  * `u`, `c`, and `C` change the "root." This root is internal to Poplar, and
    does not mean the current working directory. No Poplar operation will
    change the current working directory.

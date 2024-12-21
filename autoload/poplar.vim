@@ -55,21 +55,14 @@ if 'g:poplar.keys'->exists()
 else
     g:poplar.keys = default_keys
 endif
-if !'g:poplar.yankreg'->exists()
-    g:poplar.yankreg = '+'
-endif
-if !'g:poplar.verbosity'->exists()
-    g:poplar.verbosity = 'all'
-endif
-if !'g:poplar.diropensymb'->exists()
-    g:poplar.diropensymb = '▾'
-endif
-if !'g:poplar.dirclosedsymb'->exists()
-    g:poplar.dirclosedsymb = '▸'
-endif
-g:poplar.k_ignore = [
-    '<cursorhold>'
-]
+
+g:poplar.yankreg = g:poplar->get('yankreg', '+')
+g:poplar.verbosity = g:poplar->get('verbosity', 'all')
+g:poplar.diropensymb = g:poplar->get('diropensymb', '▾')
+g:poplar.dirclosedsymb = g:poplar->get('dirclosedsymb', '▸')
+g:poplar.filename = g:poplar->get('filename', '.poplar.txt')
+
+g:poplar.k_ignore = ['<cursorhold>']
 g:poplar.textprops = {
     TreeDir:      ['prop_poplar_tree_dir',       'NERDTreeDir',      'Directory'],
     TreeCWD:      ['prop_poplar_tree_cwd',       'Keyword',          'Keyword'],

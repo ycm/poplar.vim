@@ -27,10 +27,10 @@ export class PinWindow extends basewindow.BaseWindow
 
 
     def _LoadPaths() # {{{
-        if !'.poplar.txt'->filereadable()
+        if !g:poplar.filename->filereadable()
             return
         endif
-        var paths = '.poplar.txt'->readfile()
+        var paths = g:poplar.filename->readfile()
         this._valid = []
         this._invalid = []
         for path in paths
@@ -90,18 +90,18 @@ export class PinWindow extends basewindow.BaseWindow
 
     def Write() # {{{
         var paths = this._valid + this._invalid
-        if '.poplar.txt'->filereadable()
+        if g:poplar.filename->filereadable()
             try
-                paths->writefile('.poplar.txt')
+                paths->writefile(g:poplar.filename)
             catch
-                this._LogErr('unable to write to .poplar.txt')
+                this._LogErr($'unable to write to {g:poplar.filename}')
             endtry
         elseif !paths->empty()
             try
-                paths->writefile('.poplar.txt')
-                this._Log('created new poplar list: .poplar.txt.')
+                paths->writefile(g:poplar.filename)
+                this._Log($'created new poplar list: {g:poplar.filename}.')
             catch
-                this._LogErr('unable to write to .poplar.txt')
+                this._LogErr($'unable to write to {g:poplar.filename}')
             endtry
         endif
     enddef # }}}

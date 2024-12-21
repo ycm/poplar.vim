@@ -219,8 +219,8 @@ export class PinWindow extends basewindow.BaseWindow
                 var path = info.valid
                         ? this._valid[info.idx]
                         : this._invalid[info.idx]
-                path->setreg('+')
-                this._Log($"saved '{path}' to register '+'")
+                path->setreg(g:poplar.yankreg)
+                this._Log($"saved '{path}' to register '{g:poplar.yankreg}'")
             endif
         elseif idx >= 0 && this._IsKey(key, g:poplar.keys.PIN_MOVE_DOWN)
             var info = this._GetPathIdxFromIdx(idx)

@@ -14,7 +14,7 @@ g:poplar.dims = {
     MAX_HEIGHT:    20,
     MIN_WIDTH:     40
 }
-g:poplar.keys = {
+var default_keys = { # {{{
     SWITCH_WINDOW_L:    'h',
     SWITCH_WINDOW_R:    'l',
     EXIT:               '<esc>',
@@ -48,7 +48,16 @@ g:poplar.keys = {
     TREE_DELETE_NODE:   'd',
     TREE_MOVE_NODE:     'm',
     TREE_CHMOD:         'P'
-}
+} # }}}
+if 'g:poplar.keys'->exists()
+    default_keys->extend(g:poplar.keys)
+    g:poplar.keys = default_keys
+else
+    g:poplar.keys = default_keys
+endif
+if !'g:poplar.yankreg'->exists()
+    g:poplar.yankreg = '+'
+endif
 g:poplar.k_ignore = [
     '<cursorhold>'
 ]
@@ -85,6 +94,11 @@ endfor # }}}
 
 
 export def Run()
+    g:poplar.user_pmenusel = 'PmenuSel'->hlget()
+    if 'PoplarSel'->hlexists()
+        highlight! link PmenuSel PoplarSel
+    endif
+
     if !g:poplar->has_key('pin_win')
         g:poplar['pin_win'] = pinwindow.PinWindow.new(false, SwitchFocus, Exit)
     endif
@@ -136,5 +150,6 @@ def Exit(): bool
     g:poplar.pin_win.SaveCurrentState()
     g:poplar.pin_win.GetId()->popup_close()
     g:poplar.pin_win.Write()
+    g:poplar.user_pmenusel->hlset()
     return true
 enddef

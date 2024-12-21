@@ -5,7 +5,7 @@ export class BaseWindow
     var _id = -1
     var _on_left: bool
     var _show_modify_mode = false
-    var _lines: list<any> = ['nothing to show!']
+    var _lines: list<dict<any>> = []
     var _CallbackSwitchFocus: func(): bool
     var _CallbackExit: func(): bool
     var _helptext: list<dict<any>>
@@ -121,7 +121,7 @@ export class BaseWindow
     enddef # }}}
 
 
-    def SetLines(new_lines: list<any>, move_cursor: bool = true) # <TODO> eventually, list<dict<any>> # {{{
+    def SetLines(new_lines: list<dict<any>>, move_cursor: bool = true) # {{{
         var curr_line = this._id->getcurpos()[1]
         var new_len = new_lines->len()
         if this._show_help

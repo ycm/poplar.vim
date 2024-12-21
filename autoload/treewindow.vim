@@ -110,8 +110,8 @@ export class TreeWindow extends basewindow.BaseWindow
             endif
         elseif idx >= 0 && this._IsKey(key, g:poplar.keys.TREE_YANK_PATH)
             var node = this._tree.GetNodeAtDisplayIndex(idx)
-            node.path->setreg('+')
-            this._Log($"saved '{node.path}' to register '+'")
+            node.path->setreg(g:poplar.yankreg)
+            this._Log($"saved '{node.path}' to register '{g:poplar.yankreg}'")
         elseif this._IsKey(key, g:poplar.keys.TREE_TOGGLE_HIDDEN)
             this._tree.ToggleHidden()
             this.SetLines(this._tree.GetPrettyFormatLines())

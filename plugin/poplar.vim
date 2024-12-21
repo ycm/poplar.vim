@@ -4,11 +4,13 @@ endif
 
 vim9script
 
+if g:->get('loaded_poplar', false)
+    finish
+endif
+g:loaded_poplar = true
+
 import autoload '../autoload/poplar.vim'
 
-hi! PoplarInv cterm=inverse gui=inverse
-hi! link PmenuSel CursorLine
-hi! link PmenuThumb CursorLine
+highlight! PoplarInv cterm=inverse gui=inverse
 
 command! Poplar poplar.Run()
-nnoremap <silent> <leader>p :Poplar<cr>

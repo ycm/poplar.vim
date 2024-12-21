@@ -58,6 +58,15 @@ endif
 if !'g:poplar.yankreg'->exists()
     g:poplar.yankreg = '+'
 endif
+if !'g:poplar.verbosity'->exists()
+    g:poplar.verbosity = 'all'
+endif
+if !'g:poplar.diropensymb'->exists()
+    g:poplar.diropensymb = '▾'
+endif
+if !'g:poplar.dirclosedsymb'->exists()
+    g:poplar.dirclosedsymb = '▸'
+endif
 g:poplar.k_ignore = [
     '<cursorhold>'
 ]

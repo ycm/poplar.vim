@@ -107,13 +107,13 @@ export class FileTree
                     : tail
             if this._expanded_paths->has_key(node.path)
                 this._text_list->add(this._FormatWithProp(
-                    $'▾ {dirname}/', dir_prop, depth))
+                    $'{g:poplar.diropensymb} {dirname}/', dir_prop, depth))
                 for child in node.children
                     this._PrettyFormatLineRecur(child, depth + 1)
                 endfor
             else
                 this._text_list->add(this._FormatWithProp(
-                    $'▸ {dirname}/', dir_prop, depth))
+                    $'{g:poplar.dirclosedsymb} {dirname}/', dir_prop, depth))
             endif
         elseif node.path->executable()
             this._text_list->add(this._FormatWithProp(

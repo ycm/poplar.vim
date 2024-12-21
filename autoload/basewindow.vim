@@ -14,6 +14,7 @@ export class BaseWindow
 
     def _GetCommonPopupProps(): dict<any> # {{{
         var maxheight = [&lines - 8, 0]->max()
+        var trueheight = [20, maxheight]->min()
         var props = {
             pos: 'topleft',
             col: &columns / 2 + 2,
@@ -21,8 +22,8 @@ export class BaseWindow
             firstline: this.savestate->get('firstline', 1),
             minwidth: g:poplar.dims.MIN_WIDTH,
             maxwidth: (&columns / 2) - 8,
-            minheight: maxheight / 2, # <TODO> fix this logic
-            maxheight: maxheight / 2,
+            minheight: trueheight,
+            maxheight: trueheight,
             filter: this._BaseFilter,
             border: [],
             borderchars: ['─', '│', '─', '│', '╭', '╮', '╯', '╰'],
@@ -164,14 +165,18 @@ export class BaseWindow
 
 
     def _Log(msg: string) # {{{
-        echomsg $'[poplar] {msg}'
+        if g:poplar.verbosity == 'all'
+            echomsg $'[poplar] {msg}'
+        endif
     enddef # }}}
 
 
     def _LogErr(err: string) # {{{
-        echohl ErrorMsg
-        this._Log(err)
-        echohl None
+        if g:poplar.verbosity != 'silent'
+            echohl ErrorMsg
+            this._Log(err)
+            echohl None
+        endif
     enddef # }}}
 
     def _IsKey(key1: string, key2: string): bool

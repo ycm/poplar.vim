@@ -1,0 +1,193 @@
+*poplar.txt* popup filetree and pinned files menu
+*poplar* *poplar.vim*
+
+Author: A. Chuming Yang <https://github.com/ycm>
+License: MIT License
+                                                                  
+            ██████╗  ██████╗ ██████╗ ██╗      █████╗ ██████╗ 
+            ██╔══██╗██╔═══██╗██╔══██╗██║     ██╔══██╗██╔══██╗
+            ██████╔╝██║   ██║██████╔╝██║     ███████║██████╔╝
+            ██╔═══╝ ██║   ██║██╔═══╝ ██║     ██╔══██║██╔══██╗
+            ██║     ╚██████╔╝██║     ███████╗██║  ██║██║  ██║
+            ╚═╝      ╚═════╝ ╚═╝     ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝
+                                                 
+==============================================================================
+CONTENTS                                                    *poplar-contents*
+
+                 1. Introduction........|poplar-intro|
+                 2. Usage...............|poplar-usage|
+                 3. Configuration.......|poplar-configuration|
+                 4. Keys................|poplar-keys|
+		 5. Troubleshooting.....|poplar-troubleshooting|
+
+==============================================================================
+INTRODUCTION                                                   *poplar-intro*
+
+Poplar is a filetree/pinned file browser written in vim9script. Instead of
+using a buffer like NERDTree, Poplar uses popups.
+
+Overall, the rationale for using popups is that the filetree is usually
+superfluous -- it takes up screen space, and there are usually much better
+ways to switch between files.
+
+Moreover, sans configuration, the NERDTree buffer can sometimes be disruptive
+to an otherwise optimized setup:
+ * using a split window for the filetree will affect current splits
+ * an active filetree overrides the tabline title, unnecessarily depriving you
+   of a possibly source of information
+ * individual NERDTree buffers do not sync -- you must remember to refresh
+ * NERDTree buffers interact very poorly with sessions
+
+On the other hand, while a menu for pinned items (like harpoon) is a good
+candidate for a popup window, there is some degree of wasted space. As such,
+it might make sense to display pinned items together with a filetree. Having
+both windows governed by the same entity also allows for better
+synchronization, as changes in one window can easily be reflected in the
+other.
+
+For my personal use case, Poplar solves the biggest headache I have with
+pinned file menus, which is that renaming a file or directory will break
+existing pins. Since Poplar manages both pinned files and the filetree, it is
+now trivial to avoid this problem.
+
+==============================================================================
+USAGE                                                          *poplar-usage*
+
+Poplar is very easy to use. Just invoke the menu with `:Poplar`, or assign it
+to a mapping.
+
+By default, `h` and `l` will let you switch between the filetree and the pin
+menu. Type `?` in either menu to show the current keys.
+
+To perform modifications to either window, you must press `m` (or whatever key
+you assigned to it). This brings the respective window into 'modify mode,'
+wherein you an use `a` to add a file/directory/pin, `d` to delete, or `m` to
+move/rename. In the filetree, you can also type `P` in modify mode to invoke a
+`chmod` system command.
+
+Operations are mostly self-explanatory, but some notes:
+
+ * `<cr>` and `t` are `:drop` and `:tab drop` calls, respectively.
+ * `i` and `v` are `:split` and `:vsplit` calls, respectively, which means they
+   are affected by `&splitright` and `&splitbelow`.
+ * `y` in either menu yanks the full path of the selected file. The path will
+   get stored in the `+` register by default.
+ * `I` shows hidden files (that is, files that start with a dot). I have no
+   plans to support Windows's hidden files, since I don't know how those work.
+ * `u`, `c`, and `C` change the "root." This root is internal to Poplar, and
+   does not mean the current working directory. No Poplar operation will
+   change the current working directory.
+ * `m` and `d` in the filetree modify mode will refuse to operate on the
+   current working directory, or any directory that contains the current
+   working directory. This is by design.
+ * `d` in the filetree modify mode will never recursively delete a nonempty
+   directory. I have no plans to add a recursive flag -- better to be safe and
+   use a command line for this.
+
+==============================================================================
+CONFIGURATION                                          *poplar-configuration*
+
+Every config is stored in a global dictionary called `g:poplar`. Here are the
+defaults for the configs that you can modify: >
+    g:poplar = {
+	keys: KEYS,
+	yankreg: '+',
+	verbosity: 'all',
+	diropensymb: 'v',
+	dirclosedsymb: '>',
+	filename: '.poplar.txt',
+    }
+<
+`KEYS` is itself a lengthy dictionary described in |poplar-keys|. For the
+other configs:
+ * `yankreg` is a register name, e.g. `+` or `0`. It should be a string.
+ * `verbosity` is a string and must be `all`, `quiet`, or `silent`.
+    * `all`: print all messages
+    * `quiet`: only print errors
+    * `silent`: don't print anything
+    * note that any messages that get `echo`'d are `echomsg`, so you can check
+      `:messages` (unless you set `verbosity` to `silent`).
+ * `diropensymb` and `dirclosedsymb` are pretty obvious. Use whatever symbols
+   you like that are supported by your font.
+ * `filename` is the file that the pin menu will write to. This should always
+   relative to the current working directory.
+
+==============================================================================
+KEYS                                                            *poplar-keys*
+
+The following are default keys: >
+    var KEYS = {
+	SWITCH_WINDOW_L:    'h',
+	SWITCH_WINDOW_R:    'l',
+	EXIT:               '<esc>',
+	PIN_TOGGLE_HELP:    '?',
+	PIN_OPEN:           '<cr>',
+	PIN_OPEN_SPLIT:     'i',
+	PIN_OPEN_VSPLIT:    'v',
+	PIN_OPEN_TAB:       't',
+	PIN_MODIFY_MODE:    'm',
+	PIN_ADD:            'a',
+	PIN_MODIFY:         'm',
+	PIN_DELETE:         'd',
+	PIN_REFRESH:        'R',
+	PIN_MOVE_DOWN:      'J',
+	PIN_MOVE_UP:        'K',
+	PIN_YANK_PATH:      'y',
+	TREE_TOGGLE_HELP:   '?',
+	TREE_OPEN:          '<cr>',
+	TREE_OPEN_SPLIT:    'i',
+	TREE_OPEN_VSPLIT:   'v',
+	TREE_OPEN_TAB:      't',
+	TREE_RAISE_ROOT:    'u',
+	TREE_CHROOT:        'c',
+	TREE_CWD_ROOT:      'C',
+	TREE_REFRESH:       'R',
+	TREE_TOGGLE_HIDDEN: 'I',
+	TREE_YANK_PATH:     'y',
+	TREE_TOGGLE_PIN:    'p',
+	TREE_MODIFY_MODE:   'm',
+	TREE_ADD_NODE:      'a',
+	TREE_MOVE_NODE:     'm',
+	TREE_DELETE_NODE:   'd',
+	TREE_CHMOD:         'P'
+    }
+<
+When a keystroke is detected, the raw key is formatted by `keytrans()`. For
+single-character keys (`j`, 'I', '?', etc.), the Poplar's internal comparison
+is case-sensitive. Otherwise, the capitalization doesn't matter.
+
+An apparent quirk with `keytrans()` is that the space character, together with
+`<` are represented as `<Space>` and `<lt>`. The other printable ASCII
+characters seem to be the characters themselves, though I haven't looked into
+it very much.
+
+If you want to set `Ctrl-B` as a key for something, but are unsure how to
+represent it as a string, you may check it with `keytrans()`: >
+    :echo keytrans('^B')
+<
+which outputs `<C-B>`. Please note that `^B` is the literal `Ctrl-B` character
+obtained using `Ctrl-V`.
+
+Non-ASCII characters are okay as well. Poplar uses `strcharlen()` for string
+length, and `ä` and `Ä` are both length 1, so they are recognized as distinct
+keys.
+
+==============================================================================
+TROUBLESHOOTING                                      *poplar-troubleshooting*
+
+I haven't tested Poplar on anything besides my personal machine, so I'm not
+aware of any problem areas. Here are a couple things I can think of:
+
+ * Ambiguous-width glyphs not displaying correctly
+   Please check `&ambiwidth`, and verify that your terminal emulator supports
+   ambiguous width characters.
+ * Can't move, rename, or delete certain files/directories
+   Please note Poplar does not support the following:
+    * Modifying privileged files/directories
+    * Deleting recursively
+    * Modifying the current working directory, or a directory that contains
+      the current working directory.
+
+Other than that, please submit an issue on GitHub, thanks.
+
+vim:tw=78:ts=8:noet:ft=help:norl:

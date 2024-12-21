@@ -76,9 +76,8 @@ g:poplar = {
         SWITCH_WINDOW_R: '<c-l>',
     },
     yankreg: '0',
-    verbosity: 'quiet',
-    diropensymb: 'v',
-    dirclosedsymb: '>'
+	diropensymb: '▾',
+	dirclosedsymb: '▸',
 }
 ```
 See `:h poplar` for a full list of configs and their defaults.

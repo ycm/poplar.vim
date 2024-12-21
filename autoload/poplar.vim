@@ -45,8 +45,8 @@ var default_keys = { # {{{
     TREE_TOGGLE_PIN:    'p',
     TREE_MODIFY_MODE:   'm',
     TREE_ADD_NODE:      'a',
-    TREE_DELETE_NODE:   'd',
     TREE_MOVE_NODE:     'm',
+    TREE_DELETE_NODE:   'd',
     TREE_CHMOD:         'P'
 } # }}}
 if 'g:poplar.keys'->exists()
@@ -58,8 +58,8 @@ endif
 
 g:poplar.yankreg = g:poplar->get('yankreg', '+')
 g:poplar.verbosity = g:poplar->get('verbosity', 'all')
-g:poplar.diropensymb = g:poplar->get('diropensymb', '▾')
-g:poplar.dirclosedsymb = g:poplar->get('dirclosedsymb', '▸')
+g:poplar.diropensymb = g:poplar->get('diropensymb', 'v')
+g:poplar.dirclosedsymb = g:poplar->get('dirclosedsymb', '>')
 g:poplar.filename = g:poplar->get('filename', '.poplar.txt')
 
 g:poplar.k_ignore = ['<cursorhold>']

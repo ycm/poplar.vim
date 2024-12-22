@@ -39,6 +39,7 @@ var default_keys = { # {{{
     TREE_RAISE_ROOT:    'u',
     TREE_CHROOT:        'c',
     TREE_CWD_ROOT:      'C',
+    TREE_RUN_CMD:       'x',
     TREE_REFRESH:       'R',
     TREE_TOGGLE_HIDDEN: 'I',
     TREE_YANK_PATH:     'y',

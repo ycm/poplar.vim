@@ -112,6 +112,17 @@ export class TreeWindow extends basewindow.BaseWindow
             var node = this._tree.GetNodeAtDisplayIndex(idx)
             node.path->setreg(g:poplar.yankreg)
             this._Log($"saved '{node.path}' to register '{g:poplar.yankreg}'")
+        elseif idx >= 0 && this._IsKey(key, g:poplar.keys.TREE_RUN_CMD)
+            var node = this._tree.GetNodeAtDisplayIndex(idx)
+            var dir = node.path->isdirectory()
+                    ? node.path
+                    : node.path->fnamemodify(':h')
+            dir = dir->fnamemodify(':~')
+            if dir[-1] != '/' # only for /
+                dir = dir .. '/'
+            endif
+            inputline.Open('', $'run system command in {dir}',
+                           function(this._CallbackRunSystemCmd, [dir]))
         elseif this._IsKey(key, g:poplar.keys.TREE_TOGGLE_HIDDEN)
             this._tree.ToggleHidden()
             this.SetLines(this._tree.GetPrettyFormatLines())
@@ -141,16 +152,33 @@ export class TreeWindow extends basewindow.BaseWindow
     enddef
 
 
+    def _CallbackRunSystemCmd(path: string, cmd: string) # {{{
+        if cmd->trim() == ''
+            this._Log('operation aborted.')
+            return
+        endif
+        var cwd = getcwd()
+        execute $'cd {path}'
+        g:poplar.output = cmd->system()->split('\n')
+        execute $'cd {cwd}'
+        if g:poplar.output->empty()
+            this._Log($'ran system command: <{cmd}>.')
+        else
+            this._Log('see g:poplar.output for output.')
+        endif
+        this._tree.HardRefresh()
+        this.SetLines(this._tree.GetPrettyFormatLines())
+    enddef # }}}
+
+
     def _CallbackChmodNode(path: string, text: string) # {{{
         var args = text->trim()
         if args == ''
             this._Log('operation aborted.')
             return
         endif
-
         var cmd = $'chmod {args} {path}'
         var err = cmd->system()->split('\n')
-
         if err->empty()
             this._Log($'changed permissions to {args} for node: {path}.')
         else
@@ -302,6 +330,7 @@ export class TreeWindow extends basewindow.BaseWindow
             this._FmtHelp('raise root by one dir',  g:poplar.keys.TREE_RAISE_ROOT),
             this._FmtHelp('set dir as root',        g:poplar.keys.TREE_CHROOT),
             this._FmtHelp('reset cwd as root',      g:poplar.keys.TREE_CWD_ROOT),
+            this._FmtHelp('run system command',     g:poplar.keys.TREE_RUN_CMD),
             this._FmtHelp('refresh',                g:poplar.keys.TREE_REFRESH),
             this._FmtHelp('show/hide hidden files', g:poplar.keys.TREE_TOGGLE_HIDDEN),
             this._FmtHelp('yank full path',         g:poplar.keys.TREE_YANK_PATH),

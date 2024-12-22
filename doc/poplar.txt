@@ -81,12 +81,13 @@ Operations are mostly self-explanatory, but some notes:
  * `u`, `c`, and `C` change the "root." This root is internal to Poplar, and
    does not mean the current working directory. No Poplar operation will
    change the current working directory.
+ * `x` runs an arbitrary system command using |system()|. The output is stored
+   in `g:poplar.output`.
  * `m` and `d` in the filetree modify mode will refuse to operate on the
    current working directory, or any directory that contains the current
-   working directory. This is by design.
+   working directory. This is by design, and you should use `x` for this.
  * `d` in the filetree modify mode will never recursively delete a nonempty
-   directory. I have no plans to add a recursive flag -- better to be safe and
-   use a command line for this.
+   directory. Again, use `x` for this.
 
 ==============================================================================
 CONFIGURATION                                          *poplar-configuration*
@@ -169,6 +170,7 @@ The following are default keys: >
         TREE_RAISE_ROOT:    'u',
         TREE_CHROOT:        'c',
         TREE_CWD_ROOT:      'C',
+        TREE_RUN_CMD:       'x',
         TREE_REFRESH:       'R',
         TREE_TOGGLE_HIDDEN: 'I',
         TREE_YANK_PATH:     'y',

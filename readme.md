@@ -25,7 +25,7 @@ Poplar offers a filetree that also interacts nicely with a side-by-side **pinned
 
 Except it's better than vanilla harpoon, since pinned files are dynamically refreshed. For example, if you pin `foo/bar.txt`, and rename `foo/` to `baz/`, Poplar will update the pinned item to `baz/bar.txt`. I think the side-by-side style is better than NERDTree bookmarks also.
 
-Of course Poplar supports the familiar filesystem operations from NERDTree (add/move/delete/chmod/etc). 
+Of course Poplar supports the familiar filesystem operations from NERDTree: add, move, rename, delete, chmod, open, open tab, open split, change root, toggle hidden files, copy path, and running arbitrary system commands.
 
 Notably, Poplar features an **input line** that supports **arbitrary multibyte/ambiwidth input** (including composing characters) and **pasting instantly** (without pasting character by character like some other implementations).
 

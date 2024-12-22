@@ -1,6 +1,6 @@
 vim9script
 
-class FileTreeNode # {{{
+export class FileTreeNode # {{{
     var path: string
     public var children: list<FileTreeNode> = null_list
 
@@ -92,14 +92,8 @@ export class FileTree
     def _FormatWithProp(text: string,
                         prop: string,
                         indents: number = 0): dict<any>
-        return {
-            text: '  '->repeat(indents) .. text,
-            props: [{
-                col: 2 * indents + 1,
-                length: text->len(),
-                type: prop
-            }]
-        }
+        return {text: '  '->repeat(indents) .. text,
+                props: [{col: 2 * indents + 1, length: text->len(), type: prop}]}
     enddef
 
 
@@ -127,14 +121,10 @@ export class FileTree
                     $'{g:poplar.dirclosedsymb} {dirname}/{linksto}', dir_prop, depth))
             endif
         elseif node.path->executable()
-            var prop = islink
-                    ? 'prop_poplar_tree_link_file'
-                    : 'prop_poplar_tree_exec_file'
+            var prop = islink ? 'prop_poplar_tree_link_file' : 'prop_poplar_tree_exec_file'
             this._text_list->add(this._FormatWithProp($'  {tail}*{roflag}{linksto}', prop, depth))
         else
-            var prop = islink
-                    ? 'prop_poplar_tree_link_file'
-                    : 'prop_poplar_tree_file'
+            var prop = islink ? 'prop_poplar_tree_link_file' : 'prop_poplar_tree_file'
             this._text_list->add(this._FormatWithProp($'  {tail}{roflag}{linksto}', prop, depth))
         endif
     enddef

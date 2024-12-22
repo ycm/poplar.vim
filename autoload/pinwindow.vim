@@ -113,9 +113,7 @@ export class PinWindow extends basewindow.BaseWindow
         endif
         var lines: list<dict<any>> = []
         for path in this._valid
-            var prop = path->executable()
-                    ? 'prop_poplar_tree_exec_file'
-                    : 'prop_poplar_tree_file'
+            var prop = path->executable() ? 'prop_poplar_tree_exec_file' : 'prop_poplar_tree_file'
             lines->add(this._FormatWithProp(path->fnamemodify(':~:.'), prop, 1))
         endfor
         if !this._valid->empty() && !this._invalid->empty()
@@ -164,88 +162,35 @@ export class PinWindow extends basewindow.BaseWindow
         var idx = this._show_help
                 ? this._id->getcurpos()[1] - 1 - this._helptext->len()
                 : this._id->getcurpos()[1] - 1
+        # ----------------------- only in modify mode ------------------------
         if this._show_modify_mode
-            if idx >= 0 && this._IsKey(key, g:poplar.keys.PIN_MODIFY)
+            if this._IsKey(key, g:poplar.keys.PIN_ADD)
+                var text = ''
+                if idx >= 0
+                    var info = this._GetPathIdxFromIdx(idx)
+                    if info.idx >= 0
+                        text = info.valid ? this._valid[info.idx] : this._invalid[info.idx]
+                    endif
+                endif
+                inputline.Open(text, 'add a pin', this._CallbackPin, this.ToggleModifyMode)
+            elseif idx >= 0 && this._IsKey(key, g:poplar.keys.PIN_MODIFY)
                 var info = this._GetPathIdxFromIdx(idx)
                 if info.idx >= 0
-                    var path = info.valid
-                            ? this._valid[info.idx]
-                            : this._invalid[info.idx]
-                    inputline.Open(path, 'modify a pin',
+                    var path = info.valid ? this._valid[info.idx] : this._invalid[info.idx]
+                    inputline.Open(path, 'modify pin',
                                    function(this._CallbackRenamePin, [info.valid, info.idx]),
                                    this.ToggleModifyMode)
                 endif
             elseif idx >= 0 && this._IsKey(key, g:poplar.keys.PIN_DELETE)
                 var info = this._GetPathIdxFromIdx(idx)
                 if info.idx >= 0
-                    var path = info.valid
-                            ? this._valid[info.idx]
-                            : this._invalid[info.idx]
+                    var path = info.valid ? this._valid[info.idx] : this._invalid[info.idx]
                     inputline.Open('', $"unpin {path->fnamemodify(':~:.')}? ('yes' to confirm)",
                                    function(this._CallbackUnpin, [info.valid, info.idx]),
                                    this.ToggleModifyMode)
                 endif
-            elseif this._IsKey(key, g:poplar.keys.PIN_ADD)
-                var text = ''
-                if idx >= 0
-                    var info = this._GetPathIdxFromIdx(idx)
-                    if info.idx >= 0
-                        text = info.valid
-                                ? this._valid[info.idx]
-                                : this._invalid[info.idx]
-                    endif
-                endif
-                inputline.Open(text, 'add a pin', this._CallbackPin, this.ToggleModifyMode)
             endif
-        elseif idx >= 0 && this._IsKey(key, g:poplar.keys.PIN_OPEN)
-            if this._TryOpenFile(idx, 'drop')
-                return this._CallbackExit()
-            endif
-        elseif idx >= 0 && this._IsKey(key, g:poplar.keys.PIN_OPEN_SPLIT)
-            if this._TryOpenFile(idx, 'split')
-                return this._CallbackExit()
-            endif
-        elseif idx >= 0 && this._IsKey(key, g:poplar.keys.PIN_OPEN_VSPLIT)
-            if this._TryOpenFile(idx, 'vsplit')
-                return this._CallbackExit()
-            endif
-        elseif idx >= 0 && this._IsKey(key, g:poplar.keys.PIN_OPEN_TAB)
-            if this._TryOpenFile(idx, 'tab drop')
-                return this._CallbackExit()
-            endif
-        elseif idx >= 0 && this._IsKey(key, g:poplar.keys.PIN_YANK_PATH)
-            var info = this._GetPathIdxFromIdx(idx)
-            if info.idx >= 0
-                var path = info.valid
-                        ? this._valid[info.idx]
-                        : this._invalid[info.idx]
-                path->setreg(g:poplar.yankreg)
-                this._Log($"saved '{path}' to register '{g:poplar.yankreg}'")
-            endif
-        elseif idx >= 0 && this._IsKey(key, g:poplar.keys.PIN_MOVE_DOWN)
-            var info = this._GetPathIdxFromIdx(idx)
-            if info.valid && info.idx >= 0 && info.idx + 1 < this._valid->len()
-                [this._valid[info.idx], this._valid[info.idx + 1]] = [
-                    this._valid[info.idx + 1], this._valid[info.idx]]
-                'j'->feedkeys()
-            elseif !info.valid && info.idx >= 0 && info.idx + 1 < this._invalid->len()
-                [this._invalid[info.idx], this._invalid[info.idx + 1]] = [
-                    this._invalid[info.idx + 1], this._invalid[info.idx]]
-                'j'->feedkeys()
-            endif
-            this.SoftRefresh()
-        elseif idx >= 0 && this._IsKey(key, g:poplar.keys.PIN_MOVE_UP)
-            var info = this._GetPathIdxFromIdx(idx)
-            if info.valid && info.idx > 0 && this._valid->len() > 1
-                [this._valid[info.idx], this._valid[info.idx - 1]] = [
-                    this._valid[info.idx - 1], this._valid[info.idx]]
-                'k'->feedkeys()
-            elseif !info.valid && info.idx > 0 && this._invalid->len() > 1
-                [this._invalid[info.idx], this._invalid[info.idx - 1]] = [
-                    this._invalid[info.idx - 1], this._invalid[info.idx]]
-                'k'->feedkeys()
-            endif
-            this.SoftRefresh()
+        # -------------------- cursorline can be anywhere --------------------
         elseif this._IsKey(key, g:poplar.keys.PIN_MODIFY_MODE)
             this.ToggleModifyMode()
         elseif this._IsKey(key, g:poplar.keys.PIN_REFRESH)
@@ -256,10 +201,49 @@ export class PinWindow extends basewindow.BaseWindow
             if this._show_help
                 ':noa call cursor(1, 1)'->win_execute(this._id)
             else
-                var lnum = [
-                    1, this._id->getcurpos()[1] - this._helptext->len()
-                ]->max()
+                var lnum = [1, this._id->getcurpos()[1] - this._helptext->len()]->max()
                 $':noa call cursor({lnum}, 1)'->win_execute(this._id)
+            endif
+        # ---------------- cursorline must be on a valid file ----------------
+        elseif idx >= 0
+            if (this._IsKey(key, g:poplar.keys.PIN_OPEN) && this._TryOpenFile(idx, 'drop'))
+            || (this._IsKey(key, g:poplar.keys.PIN_OPEN_SPLIT) && this._TryOpenFile(idx, 'split'))
+            || (this._IsKey(key, g:poplar.keys.PIN_OPEN_VSPLIT) && this._TryOpenFile(idx, 'vsplit'))
+            || (this._IsKey(key, g:poplar.keys.PIN_OPEN_TAB) && this._TryOpenFile(idx, 'tab drop'))
+                return this._CallbackExit()
+            elseif this._IsKey(key, g:poplar.keys.PIN_YANK_PATH)
+                var info = this._GetPathIdxFromIdx(idx)
+                if info.idx >= 0
+                    var path = info.valid
+                            ? this._valid[info.idx]
+                            : this._invalid[info.idx]
+                    path->setreg(g:poplar.yankreg)
+                    this._Log($"saved '{path}' to register '{g:poplar.yankreg}'")
+                endif
+            elseif this._IsKey(key, g:poplar.keys.PIN_MOVE_DOWN)
+                var info = this._GetPathIdxFromIdx(idx)
+                if info.valid && info.idx >= 0 && info.idx + 1 < this._valid->len()
+                    [this._valid[info.idx], this._valid[info.idx + 1]] = [
+                        this._valid[info.idx + 1], this._valid[info.idx]]
+                    'j'->feedkeys()
+                elseif !info.valid && info.idx >= 0 && info.idx + 1 < this._invalid->len()
+                    [this._invalid[info.idx], this._invalid[info.idx + 1]] = [
+                        this._invalid[info.idx + 1], this._invalid[info.idx]]
+                    'j'->feedkeys()
+                endif
+                this.SoftRefresh()
+            elseif this._IsKey(key, g:poplar.keys.PIN_MOVE_UP)
+                var info = this._GetPathIdxFromIdx(idx)
+                if info.valid && info.idx > 0 && this._valid->len() > 1
+                    [this._valid[info.idx], this._valid[info.idx - 1]] = [
+                        this._valid[info.idx - 1], this._valid[info.idx]]
+                    'k'->feedkeys()
+                elseif !info.valid && info.idx > 0 && this._invalid->len() > 1
+                    [this._invalid[info.idx], this._invalid[info.idx - 1]] = [
+                        this._invalid[info.idx - 1], this._invalid[info.idx]]
+                    'k'->feedkeys()
+                endif
+                this.SoftRefresh()
             endif
         endif
         return true

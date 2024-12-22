@@ -27,6 +27,7 @@ export class TreeWindow extends basewindow.BaseWindow
         var idx = this._show_help
                 ? this._id->getcurpos()[1] - 1 - this._helptext->len()
                 : this._id->getcurpos()[1] - 1
+        # ----------------------- only in modify mode ------------------------
         if idx >= 0 && this._show_modify_mode
             var node = this._tree.GetNodeAtDisplayIndex(idx)
             if this._IsKey(key, g:poplar.keys.TREE_ADD_NODE)
@@ -38,89 +39,16 @@ export class TreeWindow extends basewindow.BaseWindow
                                this._CallbackAddNode,
                                this.ToggleModifyMode)
             elseif this._IsKey(key, g:poplar.keys.TREE_MOVE_NODE)
-                if getcwd() =~ $'^{node.path}/'
-                    this._LogErr('cannot move dir containing cwd.')
-                elseif node.path == getcwd()
-                    this._LogErr('cannot move cwd.')
-                else
-                    inputline.Open(node.path, 'move/rename node',
-                                   function(this._CallbackMoveNode, [node.path]),
-                                   this.ToggleModifyMode)
-                endif
+                this._ModifyNode(node, 'move/rename node', node.path,
+                                 function(this._CallbackMoveNode, [node.path]))
             elseif this._IsKey(key, g:poplar.keys.TREE_DELETE_NODE)
-                if getcwd() =~ $'^{node.path}/'
-                    this._LogErr('cannot delete dir containing cwd.')
-                elseif node.path == getcwd()
-                    this._LogErr('cannot delete cwd.')
-                else
-                    inputline.Open('', $"delete {node.path}? ('yes' to confirm)",
-                                   function(this._CallbackDeleteNode, [node.path]),
-                                   this.ToggleModifyMode)
-                endif
+                this._ModifyNode(node, $"delete {node.path}? ('yes' to confirm)", '',
+                                 function(this._CallbackDeleteNode, [node.path]))
             elseif this._IsKey(key, g:poplar.keys.TREE_CHMOD)
-                if getcwd() =~ $'^{node.path}/'
-                    this._LogErr('cannot call chmod on dir containing cwd.')
-                elseif node.path == getcwd()
-                    this._LogErr('cannot call chmod on cwd.')
-                else
-                    inputline.Open('', $'enter chmod arguments',
-                                   function(this._CallbackChmodNode, [node.path]),
-                                   this.ToggleModifyMode)
-                endif
+                this._ModifyNode(node, 'enter chmod arguments', '',
+                                 function(this._CallbackChmodNode, [node.path]))
             endif
-        elseif idx >= 0 && this._IsKey(key, g:poplar.keys.TREE_OPEN) # {{{
-            var node = this._tree.GetNodeAtDisplayIndex(idx)
-            if node.path->isdirectory()
-                this._tree.ToggleDir(node)
-                this.SetLines(this._tree.GetPrettyFormatLines())
-            else
-                execute $'drop {node.path->fnamemodify(':~:.')}'
-                return this._CallbackExit()
-            endif
-        elseif idx >= 0 && this._IsKey(key, g:poplar.keys.TREE_OPEN_SPLIT)
-            var node = this._tree.GetNodeAtDisplayIndex(idx)
-            if !node.path->isdirectory()
-                execute $'split {node.path->fnamemodify(':~:.')}'
-                return this._CallbackExit()
-            endif
-        elseif idx >= 0 && this._IsKey(key, g:poplar.keys.TREE_OPEN_VSPLIT)
-            var node = this._tree.GetNodeAtDisplayIndex(idx)
-            if !node.path->isdirectory()
-                execute $'vsplit {node.path->fnamemodify(':~:.')}'
-                return this._CallbackExit()
-            endif
-        elseif idx >= 0 && this._IsKey(key, g:poplar.keys.TREE_OPEN_TAB)
-            var node = this._tree.GetNodeAtDisplayIndex(idx)
-            if !node.path->isdirectory()
-                execute $'tab drop {node.path->fnamemodify(':~:.')}'
-                return this._CallbackExit()
-            endif
-        elseif idx >= 0 && this._IsKey(key, g:poplar.keys.TREE_MODIFY_MODE)
-            this.ToggleModifyMode()
-        elseif idx >= 0 && this._IsKey(key, g:poplar.keys.TREE_CHROOT)
-            var node = this._tree.GetNodeAtDisplayIndex(idx)
-            this._tree.ChangeRoot(node)
-            this.SetLines(this._tree.GetPrettyFormatLines())
-        elseif idx >= 0 && this._IsKey(key, g:poplar.keys.TREE_TOGGLE_PIN)
-            var node = this._tree.GetNodeAtDisplayIndex(idx)
-            if !(node.path->filereadable())
-                this._LogErr($'cannot pin {node.path}')
-            else
-                this._pin_callbacks.TogglePin(node.path)
-            endif
-        elseif idx >= 0 && this._IsKey(key, g:poplar.keys.TREE_YANK_PATH)
-            var node = this._tree.GetNodeAtDisplayIndex(idx)
-            node.path->setreg(g:poplar.yankreg)
-            this._Log($"saved '{node.path}' to register '{g:poplar.yankreg}'")
-        elseif idx >= 0 && this._IsKey(key, g:poplar.keys.TREE_RUN_CMD)
-            var node = this._tree.GetNodeAtDisplayIndex(idx)
-            var dir = node.path->isdirectory()
-                    ? node.path
-                    : node.path->fnamemodify(':h')
-            dir = dir->fnamemodify(':~')
-            dir = dir[-1] == '/' ? dir : $'{dir}/'
-            inputline.Open('', $'run system command in {dir}',
-                           function(this._CallbackRunSystemCmd, [dir]))
+        # -------------------- cursorline can be anywhere --------------------
         elseif this._IsKey(key, g:poplar.keys.TREE_TOGGLE_HIDDEN)
             this._tree.ToggleHidden()
             this.SetLines(this._tree.GetPrettyFormatLines())
@@ -144,9 +72,70 @@ export class TreeWindow extends basewindow.BaseWindow
                     1, this._id->getcurpos()[1] - this._helptext->len()
                 ]->max()
                 $':noa call cursor({lnum}, 1)'->win_execute(this._id)
-            endif # ------------------------------------------------------ }}}
+            endif
+        # -------------- cursorline must be on a valid file/dir --------------
+        elseif idx >= 0
+            var node = this._tree.GetNodeAtDisplayIndex(idx)
+            if this._IsKey(key, g:poplar.keys.TREE_MODIFY_MODE)
+                this.ToggleModifyMode()
+            elseif this._IsKey(key, g:poplar.keys.TREE_OPEN)
+                if node.path->isdirectory()
+                    this._tree.ToggleDir(node)
+                    this.SetLines(this._tree.GetPrettyFormatLines())
+                else
+                    execute $'drop {node.path->fnamemodify(':~:.')}'
+                    return this._CallbackExit()
+                endif
+            elseif this._IsKey(key, g:poplar.keys.TREE_OPEN_SPLIT)
+                if !node.path->isdirectory()
+                    execute $'split {node.path->fnamemodify(':~:.')}'
+                    return this._CallbackExit()
+                endif
+            elseif this._IsKey(key, g:poplar.keys.TREE_OPEN_VSPLIT)
+                if !node.path->isdirectory()
+                    execute $'vsplit {node.path->fnamemodify(':~:.')}'
+                    return this._CallbackExit()
+                endif
+            elseif this._IsKey(key, g:poplar.keys.TREE_OPEN_TAB)
+                if !node.path->isdirectory()
+                    execute $'tab drop {node.path->fnamemodify(':~:.')}'
+                    return this._CallbackExit()
+                endif
+            elseif this._IsKey(key, g:poplar.keys.TREE_CHROOT)
+                this._tree.ChangeRoot(node)
+                this.SetLines(this._tree.GetPrettyFormatLines())
+            elseif this._IsKey(key, g:poplar.keys.TREE_TOGGLE_PIN)
+                if !(node.path->filereadable())
+                    this._LogErr($'cannot pin {node.path}')
+                else
+                    this._pin_callbacks.TogglePin(node.path)
+                endif
+            elseif this._IsKey(key, g:poplar.keys.TREE_YANK_PATH)
+                node.path->setreg(g:poplar.yankreg)
+                this._Log($"saved '{node.path}' to register '{g:poplar.yankreg}'")
+            elseif this._IsKey(key, g:poplar.keys.TREE_RUN_CMD)
+                var dir = node.path->isdirectory()
+                        ? node.path
+                        : node.path->fnamemodify(':h')
+                dir = dir->fnamemodify(':~')
+                dir = dir[-1] == '/' ? dir : $'{dir}/'
+                inputline.Open('', $'run system command in {dir}',
+                               function(this._CallbackRunSystemCmd, [dir]))
+            endif
         endif
         return true
+    enddef
+
+
+    def _ModifyNode(node: filetree.FileTreeNode,
+                    prompt_title: string,
+                    starting_input: string,
+                    CallbackEnter: func(string))
+        if getcwd() =~ $'^{node.path}/' || node.path == getcwd()
+            this._LogErr('operation not permitted.')
+        else
+            inputline.Open(starting_input, prompt_title, CallbackEnter, this.ToggleModifyMode)
+        endif
     enddef
 
 

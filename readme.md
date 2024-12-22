@@ -78,9 +78,10 @@ highlight! link PoplarMenu Normal
 highlight! link PoplarMenuSel CursorLine
 ```
 
-It's very easy to configure Poplar. Just declare a dictionary like the following:
+It's very easy to configure Poplar. Just declare a dictionary called `g:poplar` in your `.vimrc`, or otherwise ensure it's declared prior to executing `:Poplar`:
 
-```
+```vim
+vim9script
 g:poplar = {
     keys: {
         SWITCH_WINDOW_L: '<c-h>',
@@ -91,15 +92,30 @@ g:poplar = {
     dirclosedsymb: '▸',
 }
 ```
-See `:h poplar` for a full list of configs and their defaults.
+
+The equivalent in legacy vimscript:
+
+```vim
+let g:poplar = {
+\     'keys': {
+\         'SWITCH_WINDOW_L': '<c-h>',
+\         'SWITCH_WINDOW_R': '<c-l>',
+\     },
+\     'yankreg': '0',
+\     'diropensymb': '▾',
+\     'dirclosedsymb': '▸',
+\ }
+```
+
+Note that if you're okay with the defaults, there's no need to declare the dictionary. Please see `:h poplar` for a full list of configs and their defaults.
 
 Unlike NERDTree, which heavily pollutes the namespace (you can verify this with `:echo g:->keys()->filter('v:val =~ "^NERD"')`), everything Poplar uses is stored in `g:poplar`.
 
 **Colors**
 
-If you have NERDTree colors defined, Poplar will use those. Alternatively you can override them and define your own colors. Below are the highlight groups you can define:
+If you have NERDTree colors defined, Poplar will use those. But alternatively you can override them and define your own colors. Below are the highlight groups you can define:
 
-```
+```vim
 PoplarMenu
 PoplarMenuSel
 PoplarTreeDir

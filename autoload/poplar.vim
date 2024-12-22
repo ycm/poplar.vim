@@ -52,16 +52,14 @@ var default_keys = { # {{{
 } # }}}
 if 'g:poplar.keys'->exists()
     default_keys->extend(g:poplar.keys)
-    g:poplar.keys = default_keys
-else
-    g:poplar.keys = default_keys
 endif
+g:poplar.keys = default_keys
 
-g:poplar.yankreg = g:poplar->get('yankreg', '+')
-g:poplar.verbosity = g:poplar->get('verbosity', 'all')
-g:poplar.diropensymb = g:poplar->get('diropensymb', 'v')
+g:poplar.yankreg =       g:poplar->get('yankreg', '+')
+g:poplar.verbosity =     g:poplar->get('verbosity', 'all')
+g:poplar.diropensymb =   g:poplar->get('diropensymb', 'v')
 g:poplar.dirclosedsymb = g:poplar->get('dirclosedsymb', '>')
-g:poplar.filename = g:poplar->get('filename', '.poplar.txt')
+g:poplar.filename =      g:poplar->get('filename', '.poplar.txt')
 
 g:poplar.k_ignore = ['<cursorhold>']
 g:poplar.textprops = {
@@ -69,6 +67,7 @@ g:poplar.textprops = {
     TreeCWD:      ['prop_poplar_tree_cwd',       'Keyword',          'Keyword'],
     TreeFile:     ['prop_poplar_tree_file',      'NERDTreeFile',     'Identifier'],
     TreeExecFile: ['prop_poplar_tree_exec_file', 'NERDTreeExecFile', 'Keyword'],
+    TreeLinkFile: ['prop_poplar_tree_link_file', 'NERDTreeLinkFile', 'Type'],
     InputText:    ['prop_poplar_input_text',     'Normal',           'Normal'],
     InputCursor:  ['prop_poplar_input_cursor',   'PoplarInv',        'PoplarInv'],
     HelpText:     ['prop_poplar_help_text',      'Comment',          'Comment'],

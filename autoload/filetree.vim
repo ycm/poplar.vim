@@ -108,30 +108,34 @@ export class FileTree
         if !this._show_hidden && tail[0] == '.' && node.path != getcwd()
             return
         endif
+        var roflag = node.path->filewritable() == 0 ? ' [RO]' : ''
+        var islink = node.path->getftype() == 'link'
+        var linksto = islink ? $' -> {node.path->resolve()}' : ''
         var indent = '  '->repeat(depth)
         if node.path->isdirectory()
-            var dir_prop = node.path ==? getcwd()
-                    ? 'prop_poplar_tree_cwd'
-                    : 'prop_poplar_tree_dir'
-            var dirname = node.path ==? getcwd()
-                    ? node.path
-                    : tail
+            var dir_prop = islink ? 'prop_poplar_tree_link_file' : 'prop_poplar_tree_dir'
+            dir_prop = node.path ==? getcwd() ? 'prop_poplar_tree_cwd' : dir_prop
+            var dirname = node.path ==? getcwd() ? node.path : tail
             if this._expanded_paths->has_key(node.path)
                 this._text_list->add(this._FormatWithProp(
-                    $'{g:poplar.diropensymb} {dirname}/', dir_prop, depth))
+                    $'{g:poplar.diropensymb} {dirname}/{linksto}', dir_prop, depth))
                 for child in node.children
                     this._PrettyFormatLineRecur(child, depth + 1)
                 endfor
             else
                 this._text_list->add(this._FormatWithProp(
-                    $'{g:poplar.dirclosedsymb} {dirname}/', dir_prop, depth))
+                    $'{g:poplar.dirclosedsymb} {dirname}/{linksto}', dir_prop, depth))
             endif
         elseif node.path->executable()
-            this._text_list->add(this._FormatWithProp(
-                $'  {tail}*', 'prop_poplar_tree_exec_file', depth))
+            var prop = islink
+                    ? 'prop_poplar_tree_link_file'
+                    : 'prop_poplar_tree_exec_file'
+            this._text_list->add(this._FormatWithProp($'  {tail}*{roflag}{linksto}', prop, depth))
         else
-            this._text_list->add(this._FormatWithProp(
-                $'  {tail}', 'prop_poplar_tree_file', depth))
+            var prop = islink
+                    ? 'prop_poplar_tree_link_file'
+                    : 'prop_poplar_tree_file'
+            this._text_list->add(this._FormatWithProp($'  {tail}{roflag}{linksto}', prop, depth))
         endif
     enddef
 

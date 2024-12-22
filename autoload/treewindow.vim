@@ -118,9 +118,7 @@ export class TreeWindow extends basewindow.BaseWindow
                     ? node.path
                     : node.path->fnamemodify(':h')
             dir = dir->fnamemodify(':~')
-            if dir[-1] != '/' # only for /
-                dir = dir .. '/'
-            endif
+            dir = dir[-1] == '/' ? dir : $'{dir}/'
             inputline.Open('', $'run system command in {dir}',
                            function(this._CallbackRunSystemCmd, [dir]))
         elseif this._IsKey(key, g:poplar.keys.TREE_TOGGLE_HIDDEN)

@@ -95,6 +95,7 @@ PoplarTreeDir
 PoplarTreeCWD
 PoplarTreeFile
 PoplarTreeExecFile
+PoplarTreeLinkFile
 PoplarInputText
 PoplarInputCursor
 PoplarHelpText

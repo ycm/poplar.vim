@@ -179,10 +179,11 @@ export class BaseWindow
         endif
     enddef # }}}
 
-    def _IsKey(key1: string, key2: string): bool
+
+    def _IsKey(key1: string, key2: string): bool # {{{
         return key2->strcharlen() == 1
                 ? key1 == key2
                 : key1 ==? key2
-    enddef
+    enddef # }}}
 
 endclass

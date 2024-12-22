@@ -131,6 +131,8 @@ namespace.
  * `PoplarTreeFile` (tries to find `NERDTreeFile`, otherwise uses `Identifier`)
  * `PoplarTreeExecFile` (tries to find `NERDTreeExecFile`, otherwise uses
      `Keyword`)
+ * `PoplarTreeLinkFile` (tries to find `NERDTreeLinkFile`, otherwise uses
+     `Type`)
  * `PoplarInputText`   (defaults to `Normal`)
  * `PoplarHelpText`    (defaults to `Comment`)
  * `PoplarHelpKey`     (defaults to `Keyword`)

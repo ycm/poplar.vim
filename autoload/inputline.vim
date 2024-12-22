@@ -169,6 +169,21 @@ def FilterNonPrintable(key: string): bool
         if g:poplar.input.cursor < g:poplar.input.text->strcharlen()
             ++g:poplar.input.cursor            
         endif
+    elseif key ==? '<c-left>'
+        if g:poplar.input.cursor > 0
+            --g:poplar.input.cursor
+            while g:poplar.input.cursor > 0 && g:poplar.input.text[g:poplar.input.cursor] != '/'
+                --g:poplar.input.cursor
+            endwhile
+        endif
+    elseif key ==? '<c-right>'
+        var txt = g:poplar.input.text
+        if g:poplar.input.cursor < txt->strcharlen()
+            ++g:poplar.input.cursor
+            while g:poplar.input.cursor < txt->strcharlen() && txt[g:poplar.input.cursor] != '/'
+                ++g:poplar.input.cursor
+            endwhile
+        endif
     elseif key ==? '<home>' || key ==? '<c-a>'
         g:poplar.input.cursor = 0
     elseif key ==? '<end>' || key ==? '<c-e>'

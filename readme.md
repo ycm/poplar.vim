@@ -27,7 +27,12 @@ Except it's better than vanilla harpoon, since pinned files are dynamically refr
 
 Of course Poplar supports the familiar filesystem operations from NERDTree: add, move, rename, delete, chmod, open, open tab, open split, change root, toggle hidden files, copy path, and running arbitrary system commands.
 
-Notably, Poplar features an **input line** that supports **arbitrary multibyte/ambiwidth input** (including composing characters) and **pasting instantly** (without pasting character by character like some other implementations).
+Notably, Poplar implements a very reasonable **input line** that supports:
+- familiar cursor navigation keys - `<left>`, `<right>`, `<home>`, `<end>`, `<c-a>`, and `<c-e>`
+- moving across `/` characters with `<c-left>` and `<c-right>` to edit filepaths more intuitively
+- natural asymmetric scrolling so you can see which characters you're backspacing
+- arbitrary multibyte/ambiwidth input (including composing characters)
+- pasting instantly (without pasting character by character like some other implementations).
 
 By default, `?` will show current key bindings:
 

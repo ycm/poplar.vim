@@ -296,7 +296,7 @@ export class PinWindow extends basewindow.BaseWindow
 
 
     def _CallbackPin(path: string) # {{{
-        var p = path->trim()
+        var p = path->trim()->simplify()
         if p == ''
             this._Log($'operation aborted.')
             return
@@ -322,7 +322,7 @@ export class PinWindow extends basewindow.BaseWindow
 
 
     def _CallbackRenamePin(valid: bool, idx: number, path: string) # {{{
-        var p = path->trim()
+        var p = path->trim()->simplify()
         if p == ''
             this._Log('rename aborted.')
             return

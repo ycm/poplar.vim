@@ -221,7 +221,7 @@ export class TreeWindow extends basewindow.BaseWindow
 
 
     def _CallbackMoveNode(from: string, to: string) # {{{
-        var dest = to->trim()
+        var dest = to->trim()->simplify()
         if dest == ''
             this._Log('operation aborted.')
             return
@@ -288,7 +288,7 @@ export class TreeWindow extends basewindow.BaseWindow
 
 
     def _CallbackAddNode(path: string) # {{{
-        var trimmed = path->trim()
+        var trimmed = path->trim()->simplify()
         if trimmed == ''
             this._Log('node creation aborted.')
             return

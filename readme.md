@@ -68,8 +68,14 @@ If East Asian characters are displaying incorrectly, check `&ambiwidth`.
 ## Configuration
 
 Sample mapping:
-```
+```vim
 nnoremap <silent> <leader>p :Poplar<cr>
+```
+
+Recommended:
+```vim
+highlight! link PoplarMenu Normal
+highlight! link PoplarMenuSel CursorLine
 ```
 
 It's very easy to configure Poplar. Just declare a dictionary like the following:

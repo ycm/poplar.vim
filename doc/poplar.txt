@@ -51,8 +51,8 @@ pinned file menus, which is that renaming a file or directory will break
 existing pins. Since Poplar manages both pinned files and the filetree, it is
 now trivial to avoid this problem.
 
-Please note that Poplar will likely not work on Windows. I don't know how
-Windows files and paths work, and I don't have have a need to figure that out
+Please note that Poplar might not work on Windows. I don't know how Windows
+files and paths work, and I don't have have a need to figure that out
 currently.
 
 ==============================================================================
@@ -93,7 +93,8 @@ Operations are mostly self-explanatory, but some notes:
 CONFIGURATION                                          *poplar-configuration*
 
 Every config is stored in a global dictionary called `g:poplar`. Here are the
-defaults for the configs that you can modify: >
+defaults for the configs that you can modify:
+>
     g:poplar = {
         keys: KEYS,
         yankreg: '+',
@@ -117,6 +118,16 @@ other configs:
  * `filename` is the file that the pin menu will write to. This should always
    relative to the current working directory.
 
+You don't have to set all the configs. My `.vimrc` only has the following:
+>
+    g:poplar = {
+        diropensymb: '▾',
+        dirclosedsymb: '▸',
+    }
+<
+(This is because I'm using a patched font which includes these icons, but of
+course many people do not use patched fonts.)
+
 ==============================================================================
 COLORS                                                        *poplar-colors*
 
@@ -138,6 +149,11 @@ namespace.
  * `PoplarHelpKey`     (defaults to `Keyword`)
  * `PoplarPinNotFound` (defaults to `ErrorMsg`)
 
+My `.vimrc` only uses the following:
+>
+    highlight! link PoplarMenu Normal
+    highlight! link PoplarMenuSel CursorLine
+<
 Additionally, to show the cursor in the inputline, Poplar defines a highlight
 group called `PoplarInv`, which is just `cterm=inverse` `gui=inverse`. If you
 wish to override this, you should define `PoplarInputCursor` instead. The
@@ -184,6 +200,16 @@ The following are default keys: >
         TREE_CHMOD:         'P'
     }
 <
+Please note that you don't have to remap all the keys above. The following
+configuration will only remap two of the keys, for instance:
+>
+    g:poplar = {
+        keys: {
+            SWITCH_WINDOW_L: '<c-h>',
+            SWITCH_WINDOW_R: '<c-l>'
+        }
+    }
+<
 When a keystroke is detected, the raw key is formatted by |keytrans()|. For
 single-character keys (`j`, `I`, `?`, etc.), the Poplar's internal comparison
 is case-sensitive. Otherwise, the capitalization doesn't matter.
@@ -214,11 +240,14 @@ aware of any problem areas. Here are a couple things I can think of:
    Please check |ambiwidth|, and verify that your terminal emulator supports
    ambiguous width characters.
  * Can't move, rename, or delete certain files/directories
-   Please note Poplar does not support the following:
+   Please note Poplar does not support the following in modify mode:
     * Modifying privileged files/directories
     * Deleting recursively
     * Modifying the current working directory, or a directory that contains
       the current working directory.
+   The rationale is that these actions are dangerous and could lead to
+   undefined behavior. If you wish to perform these actions, use `x` to run
+   a system command.
 
 Other than that, please submit an issue on GitHub, thanks.
 

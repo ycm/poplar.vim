@@ -43,8 +43,13 @@ By default, `?` will show current key bindings:
 Requires Vim 9+.
 
 Using a package manager like [vim-plug](https://github.com/junegunn/vim-plug):
-```
+```vim
 Plug 'ycm/poplar.vim'
+```
+
+⚠️ For Vim <9.1.850 there was a long-standing bug with vim9 object type inference. This was resolved recently with [this commit](https://github.com/vim/vim/commit/56d45f1b6658ca64857b4cb22f18a18eeefa0f1d), but a number of platforms have not updated yet. So if you are running an earlier version of Vim, please try the `testing` branch:
+```vim
+Plug 'ycm/poplar.vim', { 'branch': 'testing' }
 ```
 
 Manual installation:

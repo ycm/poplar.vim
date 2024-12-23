@@ -29,9 +29,12 @@ export class PinWindow extends basewindow.BaseWindow
 
     def _LoadPaths() # {{{
         if !g:poplar.filename->filereadable()
+            v:errors->add($'ERROR, {g:poplar.filename} not readable.')
             return
         endif
         var paths = g:poplar.filename->readfile()
+        v:errors->add('paths found:')
+        v:errors->extend(paths)
         this._valid = []
         this._invalid = []
         for path in paths

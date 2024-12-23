@@ -147,7 +147,7 @@ export def PinFile(arg: string = '')
     endif
     if !g:poplar.filename->filereadable()
         inputsave()
-        var resp = input($"[poplar] couldn't find {g:poplar.filename}. Create {g:poplar.filename}? (y/N) ")
+        var resp = input($"[poplar] create {g:poplar.filename}? (y/N) ")
         inputrestore()
         redraw
         if resp->trim() !=? 'y'

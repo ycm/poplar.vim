@@ -12,7 +12,6 @@ export class PinWindow extends basewindow.BaseWindow
             this._CallbackSwitchFocus,
             this._CallbackExit)
         this._InitHelpText()
-        this._LoadPaths()
     enddef
 
 
@@ -27,7 +26,7 @@ export class PinWindow extends basewindow.BaseWindow
     enddef
 
 
-    def _LoadPaths() # {{{
+    def LoadPaths() # {{{
         if !g:poplar.filename->filereadable()
             return
         endif
@@ -93,13 +92,13 @@ export class PinWindow extends basewindow.BaseWindow
         var paths = this._valid + this._invalid
         if g:poplar.filename->filereadable()
             try
-                paths->writefile(g:poplar.filename)
+                paths->writefile(g:poplar.filename, 's')
             catch
                 this._LogErr($'unable to write to {g:poplar.filename}')
             endtry
         elseif !paths->empty()
             try
-                paths->writefile(g:poplar.filename)
+                paths->writefile(g:poplar.filename, 's')
                 this._Log($'created new poplar list: {g:poplar.filename}.')
             catch
                 this._LogErr($'unable to write to {g:poplar.filename}')
@@ -166,13 +165,7 @@ export class PinWindow extends basewindow.BaseWindow
         # ----------------------- only in modify mode ------------------------
         if this._show_modify_mode
             if this._IsKey(key, g:poplar.keys.PIN_ADD)
-                var text = ''
-                if idx >= 0
-                    var info = this._GetPathIdxFromIdx(idx)
-                    if info.idx >= 0
-                        text = info.valid ? this._valid[info.idx] : this._invalid[info.idx]
-                    endif
-                endif
+                var text = getcwd()[-1] == '/' ? getcwd() : getcwd() .. '/'
                 inputline.Open(text, 'add a pin', this._CallbackPin, this.ToggleModifyMode)
             elseif idx >= 0 && this._IsKey(key, g:poplar.keys.PIN_MODIFY)
                 var info = this._GetPathIdxFromIdx(idx)

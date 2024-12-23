@@ -119,6 +119,8 @@ export def Run()
 
     (<TW.TreeWindow>g:poplar.tree_win).Open(' poplar ')
     (<PW.PinWindow>g:poplar.pin_win).Open(' pinned ')
+    (<PW.PinWindow>g:poplar.pin_win).LoadPaths()
+    (<PW.PinWindow>g:poplar.pin_win).HardRefresh()
 
     if (<TW.TreeWindow>g:poplar.tree_win).savestate->empty()
         (<TW.TreeWindow>g:poplar.tree_win).GetId()->popup_setoptions({
@@ -131,6 +133,51 @@ export def Run()
         })
         (<TW.TreeWindow>g:poplar.tree_win).InitLines()
         (<PW.PinWindow>g:poplar.pin_win).SoftRefresh()
+    endif
+enddef
+
+
+export def PinFile(arg: string = '')
+    var path = arg->trim() == ''
+            ? '%:p'->expand()
+            : arg->trim()->simplify()->fnamemodify(':p')
+    if !path->filereadable()
+        echohl ErrorMsg
+        echomsg $'[poplar] invalid file: {path}.'
+        echohl None
+        return
+    endif
+    if !g:poplar.filename->filereadable()
+        inputsave()
+        var resp = input($"[poplar] create {g:poplar.filename}? (y/N) ")
+        inputrestore()
+        redraw
+        if resp->trim() !=? 'y'
+            echomsg '[poplar] aborted.'
+            return
+        else
+            try
+                []->writefile(g:poplar.filename, 'as')
+            catch
+                echohl ErrorMsg
+                echomsg $'[poplar] could not write to {g:poplar.filename}.'
+                echohl None
+                return
+            endtry
+        endif
+    endif
+    var saved = g:poplar.filename->readfile()
+    if saved->index(path) >= 0
+        echomsg $'[poplar] {path} already present in {g:poplar.filename}.'
+    else
+        try
+            [path]->writefile(g:poplar.filename, 'as')
+            echomsg $'[poplar] added a pin to {path}.'
+        catch
+            echohl ErrorMsg
+            echomsg $'[poplar] could not write to {g:poplar.filename}.'
+            echohl None
+        endtry
     endif
 enddef
 

@@ -105,8 +105,10 @@ export class TreeWindow extends basewindow.BaseWindow
                 this._tree.ChangeRoot(node)
                 this.SetLines(this._tree.GetPrettyFormatLines())
             elseif this._IsKey(key, g:poplar.keys.TREE_TOGGLE_PIN)
-                if !(node.path->filereadable())
-                    this._LogErr($'cannot pin {node.path}')
+                if node.path->isdirectory()
+                    this._LogErr($'cannot pin {node.path}: is a directory!')
+                elseif !(node.path->filereadable())
+                    this._LogErr($'cannot pin {node.path}: not a readable file!')
                 else
                     this._pin_callbacks.TogglePin(node.path)
                 endif

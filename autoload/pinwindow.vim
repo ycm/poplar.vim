@@ -12,7 +12,6 @@ export class PinWindow extends basewindow.BaseWindow
             this._CallbackSwitchFocus,
             this._CallbackExit)
         this._InitHelpText()
-        # this.LoadPaths()
     enddef
 
 

@@ -107,6 +107,16 @@ defaults for the configs that you can modify:
         diropensymb: 'v',
         dirclosedsymb: '>',
         filename: '.poplar.txt',
+	showgit: true,
+	giticons: {
+	    staged:    '[S]',
+	    modified:  '[M]',
+	    renamed:   '[R]',
+	    untracked: '[U]',
+	    ignored:   '[!]',
+	    unknown:   '[?]',
+	    multiple:  '[*]'
+	}
     }
 <
 `KEYS` is itself a lengthy dictionary described in |poplar-keys|. For the
@@ -122,6 +132,10 @@ other configs:
    you like that are supported by your font.
  * `filename` is the file that the pin menu will write to. This should always
    relative to the current working directory.
+ * `showgit` instructs Poplar whether to parse and show `git status` output.
+ * `giticons` will only be used if `showgit` is `1` or `true`. You don't have
+   to define icons for every status. The `multiple` icon is used for
+   directories that contain files with different statuses.
 
 You don't have to set all the configs. My `.vimrc` only has the following:
 >
@@ -153,6 +167,13 @@ namespace.
  * `PoplarHelpText`    (defaults to `Comment`)
  * `PoplarHelpKey`     (defaults to `Keyword`)
  * `PoplarPinNotFound` (defaults to `ErrorMsg`)
+ * `GitStaged`         (defaults to `Constant`)
+ * `GitModified`       (defaults to `String`) 
+ * `GitRenamed`        (defaults to `Identifier`)
+ * `GitUntracked`      (defaults to `Identifier`)
+ * `GitIgnored`        (defaults to `Identifier`)
+ * `GitUnknown`        (defaults to `Identifier`)
+ * `GitMultiple`       (defaults to `Identifier`)
 
 My `.vimrc` only uses the following:
 >
@@ -241,9 +262,18 @@ TROUBLESHOOTING                                      *poplar-troubleshooting*
 I haven't tested Poplar on anything besides my personal machine, so I'm not
 aware of any problem areas. Here are a couple things I can think of:
 
+ * General runtime issues
+   Classes in Vim 9 have a lot of bugs that are continuously being fixed.
+   Poplar should work on Vim 9.1.785 and later. I haven't gotten a chance to
+   test earlier versions. When in doubt, try to update Vim to at least version
+   9.1.850.
  * Ambiguous-width glyphs not displaying correctly
    Please check |ambiwidth|, and verify that your terminal emulator supports
    ambiguous width characters.
+ * Certain things are not refreshing
+   Poplar avoids refreshing things unless it has to. Use `R` to manually
+   refresh. Any filetree operation (expanding a directory, changing root,
+   etc.) will also refresh Poplar.
  * Can't move, rename, or delete certain files/directories
    Please note Poplar does not support the following in modify mode:
     * Modifying privileged files/directories

@@ -6,6 +6,8 @@ import './pinwindow.vim' as PW
 if !'g:poplar'->exists()
     g:poplar = {}
 endif
+
+# GENERAL FIELDS (not user-configurable at the moment) ------------------- {{{
 g:poplar.input = {}
 g:poplar.dims = {
     Z_WIN_INPUT:   150,
@@ -14,7 +16,11 @@ g:poplar.dims = {
     MAX_HEIGHT:    20,
     MIN_WIDTH:     40
 }
-var default_keys = { # {{{
+g:poplar.k_ignore = ['<cursorhold>']
+g:poplar.modify_text = '(modify-mode)' # }}}
+
+# KEYMAPS (freely configurable) ------------------------------------------ {{{
+var default_keys = {
     SWITCH_WINDOW_L:    'h',
     SWITCH_WINDOW_R:    'l',
     EXIT:               '<esc>',
@@ -49,22 +55,50 @@ var default_keys = { # {{{
     TREE_MOVE_NODE:     'm',
     TREE_DELETE_NODE:   'd',
     TREE_CHMOD:         'P'
-} # }}}
+}
 if 'g:poplar.keys'->exists()
     default_keys->extend(g:poplar.keys)
 endif
-g:poplar.keys = default_keys
+g:poplar.keys = default_keys # }}}
 
+# GIT STATUS ICONS (freely configurable) --------------------------------- {{{
+g:poplar.showgit = g:poplar->get('showgit', true)
+if g:poplar.showgit
+    var default_giticons = {
+        'staged':    '[S]',
+        'modified':  '[M]',
+        'renamed':   '[R]',
+        'untracked': '[U]',
+        'ignored':   '[!]',
+        'unknown':   '[?]',
+        'multiple':  '[*]'
+    }
+    if 'g:poplar.git_icons'->exists()
+        default_giticons->extend(g:poplar.git_icons)
+    endif
+    g:poplar.git_icons = default_giticons
+    g:poplar.git_status_props = {
+        'staged':    'prop_poplar_git_staged',
+        'modified':  'prop_poplar_git_modified',
+        'renamed':   'prop_poplar_git_renamed',
+        'untracked': 'prop_poplar_git_untracked',
+        'ignored':   'prop_poplar_git_ignored',
+        'unknown':   'prop_poplar_git_unknown',
+        'multiple':  'prop_poplar_git_multiple'
+    }
+endif # }}}
+
+# SINGLE CONFIGS (freely-configurable) ----------------------------------- {{{
 g:poplar.yankreg =       g:poplar->get('yankreg', '+')
 g:poplar.verbosity =     g:poplar->get('verbosity', 'all')
 g:poplar.diropensymb =   g:poplar->get('diropensymb', 'v')
 g:poplar.dirclosedsymb = g:poplar->get('dirclosedsymb', '>')
-g:poplar.filename =      g:poplar->get('filename', '.poplar.txt')
+g:poplar.filename =      g:poplar->get('filename', '.poplar.txt') # }}}
 
-g:poplar.k_ignore = ['<cursorhold>']
+# TEXT PROPERTIES (can override but not configure) ----------------------- {{{
 g:poplar.textprops = {
     TreeDir:      ['prop_poplar_tree_dir',       'NERDTreeDir',      'Directory'],
-    TreeCWD:      ['prop_poplar_tree_cwd',       'Keyword',          'Keyword'],
+    TreeCWD:      ['prop_poplar_tree_cwd',       'NERDTreeCWD',      'Keyword'],
     TreeFile:     ['prop_poplar_tree_file',      'NERDTreeFile',     'Identifier'],
     TreeExecFile: ['prop_poplar_tree_exec_file', 'NERDTreeExecFile', 'Keyword'],
     TreeLinkFile: ['prop_poplar_tree_link_file', 'NERDTreeLinkFile', 'Type'],
@@ -72,11 +106,19 @@ g:poplar.textprops = {
     InputCursor:  ['prop_poplar_input_cursor',   'PoplarInv',        'PoplarInv'],
     HelpText:     ['prop_poplar_help_text',      'Comment',          'Comment'],
     HelpKey:      ['prop_poplar_help_key',       'Keyword',          'Keyword'],
-    PinNotFound:  ['prop_poplar_pin_not_found',  'ErrorMsg',         'ErrorMsg']
+    PinNotFound:  ['prop_poplar_pin_not_found',  'ErrorMsg',         'ErrorMsg'],
 }
-g:poplar.modify_text = '(modify-mode)'
-
-# TEXT PROPERTIES -------------------------------------------------------- {{{
+if g:poplar.showgit
+    g:poplar.textprops->extend({
+        GitStaged:    ['prop_poplar_git_staged',    'Constant', 'Constant'],
+        GitModified:  ['prop_poplar_git_modified',  'String', 'String'],
+        GitRenamed:   ['prop_poplar_git_renamed',   'Identifier', 'Identifier'],
+        GitUntracked: ['prop_poplar_git_untracked', 'Identifier', 'Identifier'],
+        GitIgnored:   ['prop_poplar_git_ignored',   'Identifier', 'Identifier'],
+        GitUnknown:   ['prop_poplar_git_unknown',   'Identifier', 'Identifier'],
+        GitMultiple:  ['prop_poplar_git_multiple',  'Identifier', 'Identifier']
+    })
+endif
 for [key, val] in g:poplar.textprops->items()
     var propname = val[0]
     if propname->prop_type_get() != {}
@@ -138,13 +180,16 @@ enddef
 
 
 export def PinFile(arg: string = '')
+    def LogErr(msg: string)
+        echohl ErrorMsg
+        echomsg msg
+        echohl None
+    enddef
     var path = arg->trim() == ''
             ? '%:p'->expand()
             : arg->trim()->simplify()->fnamemodify(':p')
     if !path->filereadable()
-        echohl ErrorMsg
-        echomsg $'[poplar] invalid file: {path}.'
-        echohl None
+        LogErr($'[poplar] invalid file: {path}.')
         return
     endif
     if !g:poplar.filename->filereadable()
@@ -159,9 +204,7 @@ export def PinFile(arg: string = '')
             try
                 []->writefile(g:poplar.filename, 'as')
             catch
-                echohl ErrorMsg
-                echomsg $'[poplar] could not write to {g:poplar.filename}.'
-                echohl None
+                LogErr($'[poplar] could not write to {g:poplar.filename}.')
                 return
             endtry
         endif
@@ -174,9 +217,7 @@ export def PinFile(arg: string = '')
             [path]->writefile(g:poplar.filename, 'as')
             echomsg $'[poplar] added a pin to {path}.'
         catch
-            echohl ErrorMsg
-            echomsg $'[poplar] could not write to {g:poplar.filename}.'
-            echohl None
+            LogErr($'[poplar] could not write to {g:poplar.filename}.')
         endtry
     endif
 enddef

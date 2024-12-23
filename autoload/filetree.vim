@@ -1,5 +1,7 @@
 vim9script
 
+import './util.vim' as util
+
 export class FileTreeNode # {{{
     var path: string
     public var children: list<FileTreeNode> = null_list
@@ -15,6 +17,7 @@ export class FileTree
     var _text_list: list<dict<any>>
     var _show_hidden: bool
     var _expanded_paths: dict<string> # this is a set
+    var _git_status: dict<string>
 
     def new(root_path: string)
         this.root = FileTreeNode.new(root_path)
@@ -84,16 +87,9 @@ export class FileTree
 
     def GetPrettyFormatLines(): list<dict<any>>
         this._text_list = []
+        this._git_status = util.MaybeParseGitStatus()
         this._PrettyFormatLineRecur(this.root, 0)
         return this._text_list
-    enddef
-
-
-    def _FormatWithProp(text: string,
-                        prop: string,
-                        indents: number = 0): dict<any>
-        return {text: '  '->repeat(indents) .. text,
-                props: [{col: 2 * indents + 1, length: text->len(), type: prop}]}
     enddef
 
 
@@ -102,30 +98,34 @@ export class FileTree
         if !this._show_hidden && tail[0] == '.' && node.path != getcwd()
             return
         endif
+
+        # PREFIXES/SUFFIXES TO SHOW ON TREE ------------------------------ {{{
         var roflag = node.path->filewritable() == 0 ? ' [RO]' : ''
         var islink = node.path->getftype() == 'link'
         var linksto = islink ? $' -> {node.path->resolve()}' : ''
         var indent = '  '->repeat(depth)
+        var status = g:poplar.showgit ? this._git_status->get(node.path, '') : '' # }}}
+
         if node.path->isdirectory()
             var dir_prop = islink ? 'prop_poplar_tree_link_file' : 'prop_poplar_tree_dir'
             dir_prop = node.path ==? getcwd() ? 'prop_poplar_tree_cwd' : dir_prop
             var dirname = node.path ==? getcwd() ? node.path : tail
             if this._expanded_paths->has_key(node.path)
-                this._text_list->add(this._FormatWithProp(
-                    $'{g:poplar.diropensymb} {dirname}/{linksto}', dir_prop, depth))
+                this._text_list->add(util.FormatWithProp(
+                    $'{dirname}/{linksto}', dir_prop, depth, status, $'{g:poplar.diropensymb} '))
                 for child in node.children
                     this._PrettyFormatLineRecur(child, depth + 1)
                 endfor
             else
-                this._text_list->add(this._FormatWithProp(
-                    $'{g:poplar.dirclosedsymb} {dirname}/{linksto}', dir_prop, depth))
+                this._text_list->add(util.FormatWithProp(
+                    $'{dirname}/{linksto}', dir_prop, depth, status, $'{g:poplar.dirclosedsymb} '))
             endif
         elseif node.path->executable()
             var prop = islink ? 'prop_poplar_tree_link_file' : 'prop_poplar_tree_exec_file'
-            this._text_list->add(this._FormatWithProp($'  {tail}*{roflag}{linksto}', prop, depth))
+            this._text_list->add(util.FormatWithProp($'{tail}*{roflag}{linksto}', prop, depth, status, '  '))
         else
             var prop = islink ? 'prop_poplar_tree_link_file' : 'prop_poplar_tree_file'
-            this._text_list->add(this._FormatWithProp($'  {tail}{roflag}{linksto}', prop, depth))
+            this._text_list->add(util.FormatWithProp($'{tail}{roflag}{linksto}', prop, depth, status, '  '))
         endif
     enddef
 

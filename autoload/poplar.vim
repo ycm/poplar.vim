@@ -155,7 +155,7 @@ export def PinFile(arg: string = '')
             return
         else
             try
-                []->writefile(g:poplar.filename, 'a')
+                []->writefile(g:poplar.filename, 'as')
             catch
                 echohl ErrorMsg
                 echomsg $'[poplar] could not write to {g:poplar.filename}.'
@@ -169,7 +169,7 @@ export def PinFile(arg: string = '')
         echomsg $'[poplar] {path} already present in {g:poplar.filename}.'
     else
         try
-            [path]->writefile(g:poplar.filename, 'a')
+            [path]->writefile(g:poplar.filename, 'as')
             echomsg $'[poplar] added a pin to {path}.'
         catch
             echohl ErrorMsg

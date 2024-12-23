@@ -130,10 +130,8 @@ export def Run()
              zindex: g:poplar.dims.Z_WIN_NOFOCUS,
              cursorline: false
          })
-         # (<TW.TreeWindow>g:poplar.tree_win).InitLines()
-         # (<PW.PinWindow>g:poplar.pin_win).SoftRefresh()
-         (g:poplar.tree_win).InitLines()
-         (g:poplar.pin_win).SoftRefresh()
+         (<TW.TreeWindow>g:poplar.tree_win).InitLines()
+         (<PW.PinWindow>g:poplar.pin_win).SoftRefresh()
      endif
 enddef
 

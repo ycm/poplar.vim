@@ -3,11 +3,6 @@ vim9script
 import './treewindow.vim' as TW
 import './pinwindow.vim' as PW
 
-# count composing chars:  strchars()
-#                         strcharpart()
-# ignore composing chars: strcharlne()
-#                         slice()
-
 export def Open(starting_text: string,
                 title: string = 'title',
                 CallbackEnter: func(string) = null_function,

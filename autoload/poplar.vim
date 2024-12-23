@@ -104,7 +104,7 @@ export def Run()
     if 'PoplarMenu'->hlexists()
         highlight! link Pmenu PoplarMenu
     endif
- 
+
     if !g:poplar->has_key('pin_win')
         g:poplar['pin_win'] = PW.PinWindow.new(false, SwitchFocus, Exit)
     endif
@@ -116,10 +116,10 @@ export def Run()
             UpdateDir: (<PW.PinWindow>g:poplar.pin_win).TreeCallbackUpdateDir
         })
     endif
- 
+
     (<TW.TreeWindow>g:poplar.tree_win).Open(' poplar ')
     (<PW.PinWindow>g:poplar.pin_win).Open(' pinned ')
- 
+
     if (<TW.TreeWindow>g:poplar.tree_win).savestate->empty()
         (<TW.TreeWindow>g:poplar.tree_win).GetId()->popup_setoptions({
             zindex: g:poplar.dims.Z_WIN_FOCUS,

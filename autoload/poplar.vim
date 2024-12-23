@@ -65,26 +65,26 @@ g:poplar.keys = default_keys # }}}
 g:poplar.showgit = g:poplar->get('showgit', true)
 if g:poplar.showgit
     var default_giticons = {
-        'staged':    '[S]',
-        'modified':  '[M]',
-        'renamed':   '[R]',
-        'untracked': '[U]',
-        'ignored':   '[!]',
-        'unknown':   '[?]',
-        'multiple':  '[*]'
+        staged:    '[S]',
+        modified:  '[M]',
+        renamed:   '[R]',
+        untracked: '[U]',
+        ignored:   '[!]',
+        unknown:   '[?]',
+        multiple:  '[*]'
     }
     if 'g:poplar.giticons'->exists()
         default_giticons->extend(g:poplar.giticons)
     endif
     g:poplar.giticons = default_giticons
     g:poplar.git_status_props = {
-        'staged':    'prop_poplar_git_staged',
-        'modified':  'prop_poplar_git_modified',
-        'renamed':   'prop_poplar_git_renamed',
-        'untracked': 'prop_poplar_git_untracked',
-        'ignored':   'prop_poplar_git_ignored',
-        'unknown':   'prop_poplar_git_unknown',
-        'multiple':  'prop_poplar_git_multiple'
+        staged:    'prop_poplar_git_staged',
+        modified:  'prop_poplar_git_modified',
+        renamed:   'prop_poplar_git_renamed',
+        untracked: 'prop_poplar_git_untracked',
+        ignored:   'prop_poplar_git_ignored',
+        unknown:   'prop_poplar_git_unknown',
+        multiple:  'prop_poplar_git_multiple'
     }
 endif # }}}
 

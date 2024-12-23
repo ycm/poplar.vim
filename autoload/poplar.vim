@@ -1,7 +1,7 @@
 vim9script
 
-import './treewindow.vim'
-import './pinwindow.vim'
+import './treewindow.vim' as TW
+import './pinwindow.vim' as PW
 
 if !'g:poplar'->exists()
     g:poplar = {}
@@ -96,53 +96,53 @@ endfor # }}}
 
 
 export def Run()
-    g:poplar.user_pmenu = 'Pmenu'->hlget()
-    g:poplar.user_pmenusel = 'PmenuSel'->hlget()
-    if 'PoplarMenuSel'->hlexists()
-        highlight! link PmenuSel PoplarMenuSel
-    endif
-    if 'PoplarMenu'->hlexists()
-        highlight! link Pmenu PoplarMenu
-    endif
-
-    if !g:poplar->has_key('pin_win')
-        g:poplar['pin_win'] = pinwindow.PinWindow.new(false, SwitchFocus, Exit)
-    endif
-    if !g:poplar->has_key('tree_win')
-        g:poplar['tree_win'] = treewindow.TreeWindow.new(true, SwitchFocus, Exit, {
-            Refresh: g:poplar.pin_win.HardRefresh,
-            TogglePin: g:poplar.pin_win.TreeCallbackTogglePin,
-            UpdatePin: g:poplar.pin_win.TreeCallbackUpdatePin,
-            UpdateDir: g:poplar.pin_win.TreeCallbackUpdateDir
-        })
-    endif
-
-    g:poplar.tree_win.Open(' poplar ')
-    g:poplar.pin_win.Open(' pinned ')
-
-    if g:poplar.tree_win.savestate->empty()
-        g:poplar.tree_win.GetId()->popup_setoptions({
-            zindex: g:poplar.dims.Z_WIN_FOCUS,
-            cursorline: true
-        })
-        g:poplar.pin_win.GetId()->popup_setoptions({
-            zindex: g:poplar.dims.Z_WIN_NOFOCUS,
-            cursorline: false
-        })
-        g:poplar.tree_win.InitLines()
-        g:poplar.pin_win.SoftRefresh()
-    endif
+     g:poplar.user_pmenu = 'Pmenu'->hlget()
+     g:poplar.user_pmenusel = 'PmenuSel'->hlget()
+     if 'PoplarMenuSel'->hlexists()
+         highlight! link PmenuSel PoplarMenuSel
+     endif
+     if 'PoplarMenu'->hlexists()
+         highlight! link Pmenu PoplarMenu
+     endif
+ 
+     if !g:poplar->has_key('pin_win')
+         g:poplar['pin_win'] = PW.PinWindow.new(false, SwitchFocus, Exit)
+     endif
+     if !g:poplar->has_key('tree_win')
+         g:poplar['tree_win'] = TW.TreeWindow.new(true, SwitchFocus, Exit, {
+             Refresh: (<PW.PinWindow>g:poplar.pin_win).HardRefresh,
+             TogglePin: (<PW.PinWindow>g:poplar.pin_win).TreeCallbackTogglePin,
+             UpdatePin: (<PW.PinWindow>g:poplar.pin_win).TreeCallbackUpdatePin,
+             UpdateDir: (<PW.PinWindow>g:poplar.pin_win).TreeCallbackUpdateDir
+         })
+     endif
+ 
+     (<TW.TreeWindow>g:poplar.tree_win).Open(' poplar ')
+     (<PW.PinWindow>g:poplar.pin_win).Open(' pinned ')
+ 
+     if (<TW.TreeWindow>g:poplar.tree_win).savestate->empty()
+         (<TW.TreeWindow>g:poplar.tree_win).GetId()->popup_setoptions({
+             zindex: g:poplar.dims.Z_WIN_FOCUS,
+             cursorline: true
+         })
+         (<PW.PinWindow>g:poplar.pin_win).GetId()->popup_setoptions({
+             zindex: g:poplar.dims.Z_WIN_NOFOCUS,
+             cursorline: false
+         })
+         (<TW.TreeWindow>g:poplar.tree_win).InitLines()
+         (<PW.PinWindow>g:poplar.pin_win).SoftRefresh()
+     endif
 enddef
 
 
 def SwitchFocus(): bool
-    var opts1 = g:poplar.tree_win.GetId()->popup_getoptions()
-    var opts2 = g:poplar.pin_win.GetId()->popup_getoptions()
-    g:poplar.tree_win.GetId()->popup_setoptions({
+    var opts1 = (<TW.TreeWindow>g:poplar.tree_win).GetId()->popup_getoptions()
+    var opts2 = (<PW.PinWindow>g:poplar.pin_win).GetId()->popup_getoptions()
+    (<TW.TreeWindow>g:poplar.tree_win).GetId()->popup_setoptions({
         zindex: opts2.zindex,
         cursorline: !opts1.cursorline
     })
-    g:poplar.pin_win.GetId()->popup_setoptions({
+    (<PW.PinWindow>g:poplar.pin_win).GetId()->popup_setoptions({
         zindex: opts1.zindex,
         cursorline: !opts2.cursorline
     })
@@ -151,11 +151,11 @@ enddef
 
 
 def Exit(): bool
-    g:poplar.tree_win.SaveCurrentState()
-    g:poplar.tree_win.GetId()->popup_close()
-    g:poplar.pin_win.SaveCurrentState()
-    g:poplar.pin_win.GetId()->popup_close()
-    g:poplar.pin_win.Write()
+    (<TW.TreeWindow>g:poplar.tree_win).SaveCurrentState()
+    (<TW.TreeWindow>g:poplar.tree_win).GetId()->popup_close()
+    (<PW.PinWindow>g:poplar.pin_win).SaveCurrentState()
+    (<PW.PinWindow>g:poplar.pin_win).GetId()->popup_close()
+    (<PW.PinWindow>g:poplar.pin_win).Write()
     g:poplar.user_pmenu->hlset()
     g:poplar.user_pmenusel->hlset()
     return true

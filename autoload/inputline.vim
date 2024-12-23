@@ -1,5 +1,8 @@
 vim9script
 
+import './treewindow.vim' as TW
+import './pinwindow.vim' as PW
+
 # count composing chars:  strchars()
 #                         strcharpart()
 # ignore composing chars: strcharlne()
@@ -9,8 +12,8 @@ export def Open(starting_text: string,
                 title: string = 'title',
                 CallbackEnter: func(string) = null_function,
                 CallbackExit: func(): void = null_function)
-    var tinfo = g:poplar.tree_win.GetId()->popup_getpos()
-    var pinfo = g:poplar.pin_win.GetId()->popup_getpos()
+    var tinfo = (<TW.TreeWindow>g:poplar.tree_win).GetId()->popup_getpos()
+    var pinfo = (<PW.PinWindow>g:poplar.pin_win).GetId()->popup_getpos()
     var width = tinfo.width + pinfo.width
             + tinfo.scrollbar + pinfo.scrollbar - 4
     var line = tinfo.line + [tinfo.height, pinfo.height]->max() - 1

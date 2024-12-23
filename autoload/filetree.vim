@@ -68,7 +68,7 @@ export class FileTree
         var higher_root = FileTreeNode.new(this.root.path->fnamemodify(':h'))
         this._EnsureExpand(higher_root)
         for [i, child] in higher_root.children->items()
-            if child.path == this.root.path
+            if (<FileTreeNode>child).path == (<FileTreeNode>this.root).path
                 higher_root.children[i] = this.root
                 break
             endif

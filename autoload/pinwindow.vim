@@ -3,6 +3,7 @@ vim9script
 import './basewindow.vim'
 import './inputline.vim'
 
+
 export class PinWindow extends basewindow.BaseWindow
     var _valid: list<string> = []
     var _invalid: list<string> = []

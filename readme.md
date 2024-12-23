@@ -96,6 +96,11 @@ g:poplar = {
     yankreg: '0',
     diropensymb: '▾',
     dirclosedsymb: '▸',
+    showgit: true,
+    giticons: {
+        staged: '󰸞',
+        renamed: '[R]'
+    }
 }
 ```
 
@@ -110,16 +115,21 @@ let g:poplar = {
 \     'yankreg': '0',
 \     'diropensymb': '▾',
 \     'dirclosedsymb': '▸',
+\     'showgit': 1,
+\     'giticons': {
+\         'staged': '󰸞',
+\         'renamed': '[R]'
+\     }
 \ }
 ```
 
-Note that if you're okay with the defaults, there's no need to declare the dictionary. Please see `:h poplar` for a full list of configs and their defaults.
+Note that if you're okay with the defaults, there's no need to declare the dictionary. Everything has defaults/fallbacks. Please see `:h poplar` for a full list of configs and their defaults.
 
 Unlike NERDTree, which heavily pollutes the namespace (you can verify this with `:echo g:->keys()->filter('v:val =~ "^NERD"')`), everything Poplar uses is stored in `g:poplar`.
 
 **Colors**
 
-If you have NERDTree colors defined, Poplar will use those. But alternatively you can override them and define your own colors. Below are the highlight groups you can define:
+If you have NERDTree colors defined, Poplar will try to use those. But alternatively you can override them and define your own colors. Below are the highlight groups you can define:
 
 ```vim
 PoplarMenu
@@ -134,6 +144,13 @@ PoplarInputCursor
 PoplarHelpText
 PoplarHelpKey
 PoplarPinNotFound
+PoplarGitStaged
+PoplarGitModified
+PoplarGitRenamed
+PoplarGitUntracked
+PoplarGitIgnored
+PoplarGitUnknown
+PoplarGitMultiple
 ```
 
-Note that Poplar will not automatically add these highlight groups - add them to your namespace only if you want to.
+Note that Poplar will not automatically add these highlight groups and prefer fallbacks instead, which helps avoid cluttering the `:highlight` namespace.

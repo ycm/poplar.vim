@@ -62,6 +62,11 @@ USAGE                                                          *poplar-usage*
 Poplar is very easy to use. Just invoke the menu with `:Poplar`, or assign it
 to a mapping.
 
+You can pin files through the Poplar window, or with `:PoplarPin`. Using
+`:PoplarPin` with no arguments will pin the current file. To pin a different
+file, use `:PoplarPin` `{filename}`. You can use both relative and absolute
+paths.
+
 By default, `h` and `l` will let you switch between the filetree and the pin
 menu. Type `?` in either menu to show the current keys.
 

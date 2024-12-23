@@ -21,6 +21,12 @@ Popup windows have come a long way since being added in 8.2; this plugin also de
 
 ## Features
 
+```vim
+:Poplar
+:PoplarPin
+:PoplarPin {file}
+```
+
 Poplar offers a filetree that also interacts nicely with a side-by-side **pinned items** menu, similar to NERDTree bookmarks or [harpoon](https://github.com/ThePrimeagen/harpoon/).
 
 Except it's better than vanilla harpoon, since pinned files are dynamically refreshed. For example, if you pin `foo/bar.txt`, and rename `foo/` to `baz/`, Poplar will update the pinned item to `baz/bar.txt`. I think the side-by-side style is better than NERDTree bookmarks also.

@@ -12,7 +12,7 @@ export class PinWindow extends basewindow.BaseWindow
             this._CallbackSwitchFocus,
             this._CallbackExit)
         this._InitHelpText()
-        this._LoadPaths()
+        # this.LoadPaths()
     enddef
 
 
@@ -27,7 +27,7 @@ export class PinWindow extends basewindow.BaseWindow
     enddef
 
 
-    def _LoadPaths() # {{{
+    def LoadPaths() # {{{
         if !g:poplar.filename->filereadable()
             v:errors->add($'ERROR, {g:poplar.filename} not readable.')
             return
@@ -96,13 +96,13 @@ export class PinWindow extends basewindow.BaseWindow
         var paths = this._valid + this._invalid
         if g:poplar.filename->filereadable()
             try
-                paths->writefile(g:poplar.filename)
+                paths->writefile(g:poplar.filename, 's')
             catch
                 this._LogErr($'unable to write to {g:poplar.filename}')
             endtry
         elseif !paths->empty()
             try
-                paths->writefile(g:poplar.filename)
+                paths->writefile(g:poplar.filename, 's')
                 this._Log($'created new poplar list: {g:poplar.filename}.')
             catch
                 this._LogErr($'unable to write to {g:poplar.filename}')

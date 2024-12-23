@@ -119,6 +119,7 @@ export def Run()
 
     (<TW.TreeWindow>g:poplar.tree_win).Open(' poplar ')
     (<PW.PinWindow>g:poplar.pin_win).Open(' pinned ')
+    (<PW.PinWindow>g:poplar.pin_win).LoadPaths()
 
     if (<TW.TreeWindow>g:poplar.tree_win).savestate->empty()
         (<TW.TreeWindow>g:poplar.tree_win).GetId()->popup_setoptions({

@@ -14,3 +14,4 @@ import autoload '../autoload/poplar.vim'
 highlight! PoplarInv cterm=inverse gui=inverse
 
 command! Poplar poplar.Run()
+command! -nargs=? -complete=file PoplarPin poplar.PinFile(<f-args>)

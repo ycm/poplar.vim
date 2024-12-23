@@ -135,6 +135,51 @@ export def Run()
 enddef
 
 
+export def PinFile(arg: string = '')
+    var path = arg->trim() == ''
+            ? '%:p'->expand()
+            : arg->trim()->simplify()->fnamemodify(':p')
+    if !path->filereadable()
+        echohl ErrorMsg
+        echomsg $'[poplar] invalid file: {path}.'
+        echohl None
+        return
+    endif
+    if !g:poplar.filename->filereadable()
+        inputsave()
+        var resp = input($"[poplar] couldn't find {g:poplar.filename}. Create {g:poplar.filename}? (y/N) ")
+        inputrestore()
+        redraw
+        if resp->trim() !=? 'y'
+            echomsg '[poplar] aborted.'
+            return
+        else
+            try
+                []->writefile(g:poplar.filename, 'a')
+            catch
+                echohl ErrorMsg
+                echomsg $'[poplar] could not write to {g:poplar.filename}.'
+                echohl None
+                return
+            endtry
+        endif
+    endif
+    var saved = g:poplar.filename->readfile()
+    if saved->index(path) >= 0
+        echomsg $'[poplar] {path} already present in {g:poplar.filename}.'
+    else
+        try
+            [path]->writefile(g:poplar.filename, 'a')
+            echomsg $'[poplar] added a pin to {path}.'
+        catch
+            echohl ErrorMsg
+            echomsg $'[poplar] could not write to {g:poplar.filename}.'
+            echohl None
+        endtry
+    endif
+enddef
+
+
 def SwitchFocus(): bool
     var opts1 = (<TW.TreeWindow>g:poplar.tree_win).GetId()->popup_getoptions()
     var opts2 = (<PW.PinWindow>g:poplar.pin_win).GetId()->popup_getoptions()

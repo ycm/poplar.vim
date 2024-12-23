@@ -96,43 +96,43 @@ endfor # }}}
 
 
 export def Run()
-     echomsg 'REFACTOR BRANCH'
-     g:poplar.user_pmenu = 'Pmenu'->hlget()
-     g:poplar.user_pmenusel = 'PmenuSel'->hlget()
-     if 'PoplarMenuSel'->hlexists()
-         highlight! link PmenuSel PoplarMenuSel
-     endif
-     if 'PoplarMenu'->hlexists()
-         highlight! link Pmenu PoplarMenu
-     endif
+    echomsg 'REFACTOR BRANCH'
+    g:poplar.user_pmenu = 'Pmenu'->hlget()
+    g:poplar.user_pmenusel = 'PmenuSel'->hlget()
+    if 'PoplarMenuSel'->hlexists()
+        highlight! link PmenuSel PoplarMenuSel
+    endif
+    if 'PoplarMenu'->hlexists()
+        highlight! link Pmenu PoplarMenu
+    endif
  
-     if !g:poplar->has_key('pin_win')
-         g:poplar['pin_win'] = PW.PinWindow.new(false, SwitchFocus, Exit)
-     endif
-     if !g:poplar->has_key('tree_win')
-         g:poplar['tree_win'] = TW.TreeWindow.new(true, SwitchFocus, Exit, {
-             Refresh: (<PW.PinWindow>g:poplar.pin_win).HardRefresh,
-             TogglePin: (<PW.PinWindow>g:poplar.pin_win).TreeCallbackTogglePin,
-             UpdatePin: (<PW.PinWindow>g:poplar.pin_win).TreeCallbackUpdatePin,
-             UpdateDir: (<PW.PinWindow>g:poplar.pin_win).TreeCallbackUpdateDir
-         })
-     endif
+    if !g:poplar->has_key('pin_win')
+        g:poplar['pin_win'] = PW.PinWindow.new(false, SwitchFocus, Exit)
+    endif
+    if !g:poplar->has_key('tree_win')
+        g:poplar['tree_win'] = TW.TreeWindow.new(true, SwitchFocus, Exit, {
+            Refresh: (<PW.PinWindow>g:poplar.pin_win).HardRefresh,
+            TogglePin: (<PW.PinWindow>g:poplar.pin_win).TreeCallbackTogglePin,
+            UpdatePin: (<PW.PinWindow>g:poplar.pin_win).TreeCallbackUpdatePin,
+            UpdateDir: (<PW.PinWindow>g:poplar.pin_win).TreeCallbackUpdateDir
+        })
+    endif
  
-     (<TW.TreeWindow>g:poplar.tree_win).Open(' poplar ')
-     (<PW.PinWindow>g:poplar.pin_win).Open(' pinned ')
+    (<TW.TreeWindow>g:poplar.tree_win).Open(' poplar ')
+    (<PW.PinWindow>g:poplar.pin_win).Open(' pinned ')
  
-     if (<TW.TreeWindow>g:poplar.tree_win).savestate->empty()
-         (<TW.TreeWindow>g:poplar.tree_win).GetId()->popup_setoptions({
-             zindex: g:poplar.dims.Z_WIN_FOCUS,
-             cursorline: true
-         })
-         (<PW.PinWindow>g:poplar.pin_win).GetId()->popup_setoptions({
-             zindex: g:poplar.dims.Z_WIN_NOFOCUS,
-             cursorline: false
-         })
-         (<TW.TreeWindow>g:poplar.tree_win).InitLines()
-         (<PW.PinWindow>g:poplar.pin_win).SoftRefresh()
-     endif
+    if (<TW.TreeWindow>g:poplar.tree_win).savestate->empty()
+        (<TW.TreeWindow>g:poplar.tree_win).GetId()->popup_setoptions({
+            zindex: g:poplar.dims.Z_WIN_FOCUS,
+            cursorline: true
+        })
+        (<PW.PinWindow>g:poplar.pin_win).GetId()->popup_setoptions({
+            zindex: g:poplar.dims.Z_WIN_NOFOCUS,
+            cursorline: false
+        })
+        (<TW.TreeWindow>g:poplar.tree_win).InitLines()
+        (<PW.PinWindow>g:poplar.pin_win).SoftRefresh()
+    endif
 enddef
 
 

@@ -29,12 +29,9 @@ export class PinWindow extends basewindow.BaseWindow
 
     def LoadPaths() # {{{
         if !g:poplar.filename->filereadable()
-            v:errors->add($'ERROR, {g:poplar.filename} not readable.')
             return
         endif
         var paths = g:poplar.filename->readfile()
-        v:errors->add('paths found:')
-        v:errors->extend(paths)
         this._valid = []
         this._invalid = []
         for path in paths
@@ -169,13 +166,7 @@ export class PinWindow extends basewindow.BaseWindow
         # ----------------------- only in modify mode ------------------------
         if this._show_modify_mode
             if this._IsKey(key, g:poplar.keys.PIN_ADD)
-                var text = ''
-                if idx >= 0
-                    var info = this._GetPathIdxFromIdx(idx)
-                    if info.idx >= 0
-                        text = info.valid ? this._valid[info.idx] : this._invalid[info.idx]
-                    endif
-                endif
+                var text = getcwd()[-1] == '/' ? getcwd() : getcwd() .. '/'
                 inputline.Open(text, 'add a pin', this._CallbackPin, this.ToggleModifyMode)
             elseif idx >= 0 && this._IsKey(key, g:poplar.keys.PIN_MODIFY)
                 var info = this._GetPathIdxFromIdx(idx)

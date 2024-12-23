@@ -73,10 +73,10 @@ if g:poplar.showgit
         'unknown':   '[?]',
         'multiple':  '[*]'
     }
-    if 'g:poplar.git_icons'->exists()
-        default_giticons->extend(g:poplar.git_icons)
+    if 'g:poplar.giticons'->exists()
+        default_giticons->extend(g:poplar.giticons)
     endif
-    g:poplar.git_icons = default_giticons
+    g:poplar.giticons = default_giticons
     g:poplar.git_status_props = {
         'staged':    'prop_poplar_git_staged',
         'modified':  'prop_poplar_git_modified',

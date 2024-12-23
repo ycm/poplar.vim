@@ -1,7 +1,5 @@
 vim9script
 
-
-
 export def ParseGitStatusFlags(xy: string): string
     # cf. https://github.com/Xuyuanp/nerdtree-git-plugin
     if xy->len() != 2
@@ -64,7 +62,7 @@ export def FormatWithProp(text: string,
     var ind = 2 * indents + 1
     var props = [{col: ind, length: prefix->len(), type: prop}]
     if git_status != ''
-        var gicon = g:poplar.git_icons[git_status]
+        var gicon = g:poplar.giticons[git_status]
         var gprop = g:poplar.git_status_props[git_status]
         str = prefix .. gicon .. ' ' .. text
         props->add({col: ind + prefix->len(), length: gicon->len(), type: gprop})

@@ -6,7 +6,7 @@
 
 ![demogif](https://github.com/ycm/poplar.vim/blob/master/demo/demo.gif)
 
-Screenshot:
+Screenshot showing `git status`:
 
 ![demopng](https://github.com/ycm/poplar.vim/blob/master/demo/demo.png)
 
@@ -31,7 +31,7 @@ Poplar offers a filetree that also interacts nicely with a side-by-side **pinned
 
 Except it's better than vanilla harpoon, since pinned files are dynamically refreshed. For example, if you pin `foo/bar.txt`, and rename `foo/` to `baz/`, Poplar will update the pinned item to `baz/bar.txt`. I think the side-by-side style is better than NERDTree bookmarks also.
 
-Of course Poplar supports the familiar filesystem operations from NERDTree: add, move, rename, delete, chmod, open, open tab, open split, change root, toggle hidden files, copy path, and running arbitrary system commands.
+Of course Poplar supports the familiar filesystem operations from NERDTree: add, move, rename, delete, chmod, open, open tab, open split, change root, toggle hidden files, copy path, and running arbitrary system commands. Poplar even shows the `git status` of files in your working tree.
 
 Notably, Poplar implements a very reasonable **input line** that supports:
 - familiar cursor navigation keys - `<left>`, `<right>`, `<home>`, `<end>`, `<c-a>`, and `<c-e>`

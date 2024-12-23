@@ -1,5 +1,6 @@
 vim9script
 
+import './util.vim' as util
 import './treewindow.vim' as TW
 import './pinwindow.vim' as PW
 
@@ -102,21 +103,21 @@ g:poplar.textprops = {
     TreeFile:     ['prop_poplar_tree_file',      'NERDTreeFile',     'Identifier'],
     TreeExecFile: ['prop_poplar_tree_exec_file', 'NERDTreeExecFile', 'Keyword'],
     TreeLinkFile: ['prop_poplar_tree_link_file', 'NERDTreeLinkFile', 'Type'],
-    InputText:    ['prop_poplar_input_text',     'Normal',           'Normal'],
-    InputCursor:  ['prop_poplar_input_cursor',   'PoplarInv',        'PoplarInv'],
-    HelpText:     ['prop_poplar_help_text',      'Comment',          'Comment'],
-    HelpKey:      ['prop_poplar_help_key',       'Keyword',          'Keyword'],
-    PinNotFound:  ['prop_poplar_pin_not_found',  'ErrorMsg',         'ErrorMsg'],
+    InputText:    ['prop_poplar_input_text',     'Normal'],
+    InputCursor:  ['prop_poplar_input_cursor',   'PoplarInv'],
+    HelpText:     ['prop_poplar_help_text',      'Comment'],
+    HelpKey:      ['prop_poplar_help_key',       'Keyword'],
+    PinNotFound:  ['prop_poplar_pin_not_found',  'ErrorMsg'],
 }
 if g:poplar.showgit
     g:poplar.textprops->extend({
-        GitStaged:    ['prop_poplar_git_staged',    'Constant', 'Constant'],
-        GitModified:  ['prop_poplar_git_modified',  'String', 'String'],
-        GitRenamed:   ['prop_poplar_git_renamed',   'Identifier', 'Identifier'],
-        GitUntracked: ['prop_poplar_git_untracked', 'Identifier', 'Identifier'],
-        GitIgnored:   ['prop_poplar_git_ignored',   'Identifier', 'Identifier'],
-        GitUnknown:   ['prop_poplar_git_unknown',   'Identifier', 'Identifier'],
-        GitMultiple:  ['prop_poplar_git_multiple',  'Identifier', 'Identifier']
+        GitStaged:    ['prop_poplar_git_staged',    'Constant'],
+        GitModified:  ['prop_poplar_git_modified',  'String'],
+        GitRenamed:   ['prop_poplar_git_renamed',   'Identifier'],
+        GitUntracked: ['prop_poplar_git_untracked', 'Identifier'],
+        GitIgnored:   ['prop_poplar_git_ignored',   'Identifier'],
+        GitUnknown:   ['prop_poplar_git_unknown',   'Identifier'],
+        GitMultiple:  ['prop_poplar_git_multiple',  'Identifier']
     })
 endif
 for [key, val] in g:poplar.textprops->items()
@@ -124,15 +125,19 @@ for [key, val] in g:poplar.textprops->items()
     if propname->prop_type_get() != {}
         continue
     endif
-    var default  = val[1]
-    var fallback = val[2]
     var poplar_hlgroup = $'Poplar{key}'
     if poplar_hlgroup->hlexists()
         propname->prop_type_add({highlight: poplar_hlgroup})
-    elseif default->hlexists()
-        propname->prop_type_add({highlight: default})
+    elseif val->len() == 2
+        propname->prop_type_add({highlight: val[1]})
+    elseif val->len() == 3
+        if val[1]->hlexists()
+            propname->prop_type_add({highlight: val[1]})
+        else
+            propname->prop_type_add({highlight: val[2]})
+        endif
     else
-        propname->prop_type_add({highlight: fallback})
+        throw $'fatal: invalid text property setup: {val}'
     endif
 endfor # }}}
 
@@ -180,16 +185,11 @@ enddef
 
 
 export def PinFile(arg: string = '')
-    def LogErr(msg: string)
-        echohl ErrorMsg
-        echomsg msg
-        echohl None
-    enddef
     var path = arg->trim() == ''
             ? '%:p'->expand()
             : arg->trim()->simplify()->fnamemodify(':p')
     if !path->filereadable()
-        LogErr($'[poplar] invalid file: {path}.')
+        util.LogErr($'invalid file: {path}.')
         return
     endif
     if !g:poplar.filename->filereadable()
@@ -198,26 +198,26 @@ export def PinFile(arg: string = '')
         inputrestore()
         redraw
         if resp->trim() !=? 'y'
-            echomsg '[poplar] aborted.'
+            util.Log('aborted.')
             return
         else
             try
                 []->writefile(g:poplar.filename, 'as')
             catch
-                LogErr($'[poplar] could not write to {g:poplar.filename}.')
+                util.LogErr($'could not write to {g:poplar.filename}.')
                 return
             endtry
         endif
     endif
     var saved = g:poplar.filename->readfile()
     if saved->index(path) >= 0
-        echomsg $'[poplar] {path} already present in {g:poplar.filename}.'
+        util.Log($'{path} already present in {g:poplar.filename}.')
     else
         try
             [path]->writefile(g:poplar.filename, 'as')
-            echomsg $'[poplar] added a pin to {path}.'
+            util.Log($'added a pin to {path}.')
         catch
-            LogErr($'[poplar] could not write to {g:poplar.filename}.')
+            util.LogErr($'could not write to {g:poplar.filename}.')
         endtry
     endif
 enddef

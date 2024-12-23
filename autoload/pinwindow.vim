@@ -2,6 +2,7 @@ vim9script
 
 import './basewindow.vim'
 import './inputline.vim'
+import './util.vim' as util
 
 
 export class PinWindow extends basewindow.BaseWindow
@@ -11,7 +12,7 @@ export class PinWindow extends basewindow.BaseWindow
     def new(this._on_left,
             this._CallbackSwitchFocus,
             this._CallbackExit)
-        this._InitHelpText()
+        this._helptext = util.GetPinWindowHelp()
     enddef
 
 
@@ -69,11 +70,11 @@ export class PinWindow extends basewindow.BaseWindow
         var shortp = p->fnamemodify(':~:.')
         var idx = this._valid->index(p)
         if idx >= 0
-            this._Log($"unpinned: {shortp}.")
+            util.Log($"unpinned: {shortp}.")
             this._valid->remove(idx)
         else
             this._valid->add(p)
-            this._Log($'pinned: {shortp}.')
+            util.Log($'pinned: {shortp}.')
         endif
         this.HardRefresh()
     enddef
@@ -94,14 +95,14 @@ export class PinWindow extends basewindow.BaseWindow
             try
                 paths->writefile(g:poplar.filename, 's')
             catch
-                this._LogErr($'unable to write to {g:poplar.filename}')
+                util.LogErr($'unable to write to {g:poplar.filename}')
             endtry
         elseif !paths->empty()
             try
                 paths->writefile(g:poplar.filename, 's')
-                this._Log($'created new poplar list: {g:poplar.filename}.')
+                util.Log($'created new poplar list: {g:poplar.filename}.')
             catch
-                this._LogErr($'unable to write to {g:poplar.filename}')
+                util.LogErr($'unable to write to {g:poplar.filename}')
             endtry
         endif
     enddef # }}}
@@ -212,7 +213,7 @@ export class PinWindow extends basewindow.BaseWindow
                             ? this._valid[info.idx]
                             : this._invalid[info.idx]
                     path->setreg(g:poplar.yankreg)
-                    this._Log($"saved '{path}' to register '{g:poplar.yankreg}'")
+                    util.Log($"saved '{path}' to register '{g:poplar.yankreg}'")
                 endif
             elseif this._IsKey(key, g:poplar.keys.PIN_MOVE_DOWN)
                 var info = this._GetPathIdxFromIdx(idx)
@@ -276,23 +277,23 @@ export class PinWindow extends basewindow.BaseWindow
     def _CallbackPin(path: string) # {{{
         var p = path->trim()->simplify()
         if p == ''
-            this._Log($'operation aborted.')
+            util.Log($'operation aborted.')
             return
         endif
         p = p->fnamemodify(':p')
         if p->filereadable()
             if this._valid->index(p) >= 0
-                this._Log($'already pinned: {p}.')
+                util.Log($'already pinned: {p}.')
             else
                 this._valid->add(p)
-                this._Log($'pinned a file: {p}.')
+                util.Log($'pinned a file: {p}.')
             endif
         else
             if this._invalid->index(p) >= 0
-                this._LogErr($'invalid file: {p}.')
+                util.LogErr($'invalid file: {p}.')
             else
                 this._invalid->add(p)
-                this._Log($'pinned an invalid file: {p}.')
+                util.Log($'pinned an invalid file: {p}.')
             endif
         endif
         this.SoftRefresh()
@@ -302,37 +303,37 @@ export class PinWindow extends basewindow.BaseWindow
     def _CallbackRenamePin(valid: bool, idx: number, path: string) # {{{
         var p = path->trim()->simplify()
         if p == ''
-            this._Log('rename aborted.')
+            util.Log('rename aborted.')
             return
         endif
         p = p->fnamemodify(':p')
         if valid && p->filereadable()
             this._valid->remove(idx)
             if this._valid->index(p) >= 0
-                this._Log($'already pinned: {p}.')
+                util.Log($'already pinned: {p}.')
             else
                 this._valid->insert(p, idx)
-                this._Log($'pinned a file: {p}.')
+                util.Log($'pinned a file: {p}.')
             endif
         elseif valid
             this._valid->remove(idx)
             if this._invalid->index(p) < 0
                 this._invalid->add(p)
-                this._Log($'pinned an invalid file: {p}.')
+                util.Log($'pinned an invalid file: {p}.')
             endif
         elseif p->filereadable()
             this._invalid->remove(idx)
             if this._valid->index(p) >= 0
-                this._Log($'already pinned: {p}.')
+                util.Log($'already pinned: {p}.')
             else
                 this._valid->add(p)
-                this._Log($'pinned a file: {p}.')
+                util.Log($'pinned a file: {p}.')
             endif
         else
             this._invalid->remove(idx)
             if this._invalid->index(p) < 0
                 this._invalid->insert(p, idx)
-                this._Log($'pinned an invalid file: {p}.')
+                util.Log($'pinned an invalid file: {p}.')
             endif
         endif
         this.SoftRefresh()
@@ -341,14 +342,14 @@ export class PinWindow extends basewindow.BaseWindow
 
     def _CallbackUnpin(valid: bool, idx: number, confirm: string) # {{{
         if confirm->trim() !=? 'yes'
-            this._Log("didn't unpin anything.")
+            util.Log("didn't unpin anything.")
             return
         endif
         if valid
-            this._Log($'unpinned: {this._valid[idx]}')
+            util.Log($'unpinned: {this._valid[idx]}')
             this._valid->remove(idx)
         else
-            this._Log($'unpinned: {this._invalid[idx]}')
+            util.Log($'unpinned: {this._invalid[idx]}')
             this._invalid->remove(idx)
         endif
         this.SoftRefresh()
@@ -357,22 +358,22 @@ export class PinWindow extends basewindow.BaseWindow
 
     def _InitHelpText() # {{{
         this._helptext = [
-            this._FmtHelp('toggle help',         g:poplar.keys.PIN_TOGGLE_HELP),
-            this._FmtHelp('switch to tree menu', g:poplar.keys.SWITCH_WINDOW_L),
-            this._FmtHelp('exit poplar',         g:poplar.keys.EXIT),
-            this._FmtHelp('open',                g:poplar.keys.PIN_OPEN),
-            this._FmtHelp('open in split',       g:poplar.keys.PIN_OPEN_SPLIT),
-            this._FmtHelp('open in vsplit',      g:poplar.keys.PIN_OPEN_VSPLIT),
-            this._FmtHelp('open in tab',         g:poplar.keys.PIN_OPEN_TAB),
-            this._FmtHelp('refresh',             g:poplar.keys.PIN_REFRESH),
-            this._FmtHelp('move item down',      g:poplar.keys.PIN_MOVE_DOWN),
-            this._FmtHelp('move item up',        g:poplar.keys.PIN_MOVE_UP),
-            this._FmtHelp('yank full path',      g:poplar.keys.PIN_YANK_PATH),
-            this._FmtHelp('enter modify mode',   g:poplar.keys.PIN_MODIFY_MODE),
-            this._FmtHelp('---- MODIFY MODE ----'),
-            this._FmtHelp('add pin',             g:poplar.keys.PIN_ADD),
-            this._FmtHelp('modify pin',          g:poplar.keys.PIN_MODIFY),
-            this._FmtHelp('delete pin',          g:poplar.keys.PIN_DELETE),
+            util.FormatHelp('toggle help',         g:poplar.keys.PIN_TOGGLE_HELP),
+            util.FormatHelp('switch to tree menu', g:poplar.keys.SWITCH_WINDOW_L),
+            util.FormatHelp('exit poplar',         g:poplar.keys.EXIT),
+            util.FormatHelp('open',                g:poplar.keys.PIN_OPEN),
+            util.FormatHelp('open in split',       g:poplar.keys.PIN_OPEN_SPLIT),
+            util.FormatHelp('open in vsplit',      g:poplar.keys.PIN_OPEN_VSPLIT),
+            util.FormatHelp('open in tab',         g:poplar.keys.PIN_OPEN_TAB),
+            util.FormatHelp('refresh',             g:poplar.keys.PIN_REFRESH),
+            util.FormatHelp('move item down',      g:poplar.keys.PIN_MOVE_DOWN),
+            util.FormatHelp('move item up',        g:poplar.keys.PIN_MOVE_UP),
+            util.FormatHelp('yank full path',      g:poplar.keys.PIN_YANK_PATH),
+            util.FormatHelp('enter modify mode',   g:poplar.keys.PIN_MODIFY_MODE),
+            util.FormatHelp('---- MODIFY MODE ----'),
+            util.FormatHelp('add pin',             g:poplar.keys.PIN_ADD),
+            util.FormatHelp('modify pin',          g:poplar.keys.PIN_MODIFY),
+            util.FormatHelp('delete pin',          g:poplar.keys.PIN_DELETE),
             {}
         ]
     enddef # }}}

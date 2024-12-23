@@ -145,41 +145,6 @@ export class BaseWindow
     enddef # }}}
 
 
-    def _FmtHelp(annot: string, key: string = ''): dict<any> # {{{
-        if key == ''
-            return {
-                text: annot,
-                props: [{col: 1, length: annot->len(),
-                        type: 'prop_poplar_help_text'}]
-            }
-        endif
-        return {
-            text: $'{key}: {annot}',
-            props: [
-                {col: 1, length: key->len(), type: 'prop_poplar_help_key'},
-                {col: 1 + key->len(), length: 2 + annot->len(),
-                type: 'prop_poplar_help_text'}
-            ]
-        }
-    enddef # }}}
-
-
-    def _Log(msg: string) # {{{
-        if g:poplar.verbosity == 'all'
-            echomsg $'[poplar] {msg}'
-        endif
-    enddef # }}}
-
-
-    def _LogErr(err: string) # {{{
-        if g:poplar.verbosity != 'silent'
-            echohl ErrorMsg
-            this._Log(err)
-            echohl None
-        endif
-    enddef # }}}
-
-
     def _IsKey(key1: string, key2: string): bool # {{{
         return key2->strcharlen() == 1
                 ? key1 == key2

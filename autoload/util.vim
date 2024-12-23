@@ -1,5 +1,90 @@
 vim9script
 
+export def Log(msg: string)
+    if g:poplar.verbosity == 'all'
+        echomsg $'[poplar] {msg}'
+    endif
+enddef
+
+
+export def LogErr(err: string)
+    if g:poplar.verbosity != 'silent'
+        echohl ErrorMsg
+        Log(err)
+        echohl None
+    endif
+enddef
+
+
+def FormatHelp(annot: string, key: string = ''): dict<any>
+    if key == ''
+        return {
+            text: annot,
+            props: [{col: 1, length: annot->len(),
+                    type: 'prop_poplar_help_text'}]
+        }
+    endif
+    return {
+        text: $'{key}: {annot}',
+        props: [
+            {col: 1, length: key->len(), type: 'prop_poplar_help_key'},
+            {col: 1 + key->len(), length: 2 + annot->len(),
+            type: 'prop_poplar_help_text'}
+        ]
+    }
+enddef
+
+export def GetTreeWindowHelp(): list<dict<any>>
+    return [
+        FormatHelp('toggle help',            g:poplar.keys.TREE_TOGGLE_HELP),
+        FormatHelp('switch to pin menu',     g:poplar.keys.SWITCH_WINDOW_R),
+        FormatHelp('exit poplar',            g:poplar.keys.EXIT),
+        FormatHelp('open/expand',            g:poplar.keys.TREE_OPEN),
+        FormatHelp('open in split',          g:poplar.keys.TREE_OPEN_SPLIT),
+        FormatHelp('open in vsplit',         g:poplar.keys.TREE_OPEN_VSPLIT),
+        FormatHelp('open in tab',            g:poplar.keys.TREE_OPEN_TAB),
+        FormatHelp('raise root by one dir',  g:poplar.keys.TREE_RAISE_ROOT),
+        FormatHelp('set dir as root',        g:poplar.keys.TREE_CHROOT),
+        FormatHelp('reset cwd as root',      g:poplar.keys.TREE_CWD_ROOT),
+        FormatHelp('run system command',     g:poplar.keys.TREE_RUN_CMD),
+        FormatHelp('refresh',                g:poplar.keys.TREE_REFRESH),
+        FormatHelp('show/hide hidden files', g:poplar.keys.TREE_TOGGLE_HIDDEN),
+        FormatHelp('yank full path',         g:poplar.keys.TREE_YANK_PATH),
+        FormatHelp('pin/unpin file',         g:poplar.keys.TREE_TOGGLE_PIN),
+        FormatHelp('enter modify mode',      g:poplar.keys.TREE_MODIFY_MODE),
+        FormatHelp('---- MODIFY MODE ----'),
+        FormatHelp('add file/dir',           g:poplar.keys.TREE_ADD_NODE),
+        FormatHelp('move/rename file/dir',   g:poplar.keys.TREE_MOVE_NODE),
+        FormatHelp('delete file/dir',        g:poplar.keys.TREE_DELETE_NODE),
+        FormatHelp('change permissions',     g:poplar.keys.TREE_CHMOD),
+        {}
+    ]
+enddef
+
+
+export def GetPinWindowHelp(): list<dict<any>>
+    return [
+        FormatHelp('toggle help',         g:poplar.keys.PIN_TOGGLE_HELP),
+        FormatHelp('switch to tree menu', g:poplar.keys.SWITCH_WINDOW_L),
+        FormatHelp('exit poplar',         g:poplar.keys.EXIT),
+        FormatHelp('open',                g:poplar.keys.PIN_OPEN),
+        FormatHelp('open in split',       g:poplar.keys.PIN_OPEN_SPLIT),
+        FormatHelp('open in vsplit',      g:poplar.keys.PIN_OPEN_VSPLIT),
+        FormatHelp('open in tab',         g:poplar.keys.PIN_OPEN_TAB),
+        FormatHelp('refresh',             g:poplar.keys.PIN_REFRESH),
+        FormatHelp('move item down',      g:poplar.keys.PIN_MOVE_DOWN),
+        FormatHelp('move item up',        g:poplar.keys.PIN_MOVE_UP),
+        FormatHelp('yank full path',      g:poplar.keys.PIN_YANK_PATH),
+        FormatHelp('enter modify mode',   g:poplar.keys.PIN_MODIFY_MODE),
+        FormatHelp('---- MODIFY MODE ----'),
+        FormatHelp('add pin',             g:poplar.keys.PIN_ADD),
+        FormatHelp('modify pin',          g:poplar.keys.PIN_MODIFY),
+        FormatHelp('delete pin',          g:poplar.keys.PIN_DELETE),
+        {}
+    ]
+enddef
+
+
 export def ParseGitStatusFlags(xy: string): string
     # cf. https://github.com/Xuyuanp/nerdtree-git-plugin
     if xy->len() != 2

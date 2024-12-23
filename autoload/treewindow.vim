@@ -1,18 +1,18 @@
 vim9script
 
 import './basewindow.vim'
-import './filetree.vim'
+import './filetree.vim' as FT
 import './inputline.vim'
 
 export class TreeWindow extends basewindow.BaseWindow
-    var _tree: filetree.FileTree
+    var _tree: FT.FileTree
     var _pin_callbacks: dict<func>
 
     def new(this._on_left,
             this._CallbackSwitchFocus,
             this._CallbackExit,
             this._pin_callbacks)
-        this._tree = filetree.FileTree.new(getcwd())
+        this._tree = FT.FileTree.new(getcwd())
         this._tree.ToggleDir(this._tree.root)
         this._InitHelpText()
     enddef
@@ -127,7 +127,7 @@ export class TreeWindow extends basewindow.BaseWindow
     enddef
 
 
-    def _ModifyNode(node: filetree.FileTreeNode,
+    def _ModifyNode(node: FT.FileTreeNode,
                     prompt_title: string,
                     starting_input: string,
                     CallbackEnter: func(string))

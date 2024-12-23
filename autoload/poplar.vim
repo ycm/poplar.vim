@@ -96,6 +96,7 @@ endfor # }}}
 
 
 export def Run()
+     echomsg 'REFACTOR BRANCH'
      g:poplar.user_pmenu = 'Pmenu'->hlget()
      g:poplar.user_pmenusel = 'PmenuSel'->hlget()
      if 'PoplarMenuSel'->hlexists()

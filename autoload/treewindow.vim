@@ -143,7 +143,9 @@ export class TreeWindow extends basewindow.BaseWindow
         g:poplar.output = cmd->system()->split('\n')
         execute $'cd {cwd}'
         if g:poplar.output->empty()
-            util.Log($'ran system command: <{cmd}>.')
+            util.Log($'ran system command: <{cmd}>, no output.')
+        elseif g:poplar.output->len() == 1
+            util.Log($'output: {g:poplar.output[0]}')
         else
             util.Log('see g:poplar.output for output.')
         endif

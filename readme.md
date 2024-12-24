@@ -19,6 +19,8 @@ Screenshot showing `git status`:
 
 Popup windows have come a long way since being added in 8.2; this plugin also demonstrates some ways to exploit their functionality, maybe slightly beyond what they were intended to do.
 
+The goal of Poplar is to provide a good-looking, minimally intrusive drop-in replacement to NERDTree that interacts well with git repos, offers a great deal of customization, but requires very little configuration to get started.
+
 ## Features
 
 ```vim
@@ -31,14 +33,14 @@ Poplar offers a filetree that also interacts nicely with a side-by-side **pinned
 
 Except it's better than vanilla harpoon, since pinned files are dynamically refreshed. For example, if you pin `foo/bar.txt`, and rename `foo/` to `baz/`, Poplar will update the pinned item to `baz/bar.txt`. I think the side-by-side style is better than NERDTree bookmarks also.
 
-Of course Poplar supports the familiar filesystem operations from NERDTree: add, move, rename, delete, chmod, open, open tab, open split, change root, toggle hidden files, copy path, and running arbitrary system commands. Poplar even shows the `git status` of files in your working tree.
+Of course Poplar supports the familiar filesystem operations from NERDTree: add, move, rename, delete, chmod, open, open tab, open split, change root, toggle hidden files, copy path, and running arbitrary system commands. Poplar can also show the `git status` of files in your working tree. It even tries to use `git mv` and `git rm` to rename and delete nodes when possible (you can disable this behavior).
 
 Notably, Poplar implements a very reasonable **input line** that supports:
 - familiar cursor navigation keys - `<left>`, `<right>`, `<home>`, `<end>`, `<c-a>`, and `<c-e>`
 - moving across `/` characters with `<c-left>` and `<c-right>` to edit filepaths more intuitively
 - natural asymmetric scrolling so you can see which characters you're backspacing
 - arbitrary multibyte/ambiwidth input (including composing characters)
-- pasting instantly (without pasting character by character like some other implementations).
+- pasting instantly (without pasting character by character like some other implementations)
 
 By default, `?` will show current key bindings:
 
@@ -46,7 +48,7 @@ By default, `?` will show current key bindings:
 
 ## Setup
 
-Requires Vim 9+, at least. Works for me on 9.1.866 and 9.1.785.
+Requires Vim 9 point something, probably 9.1+. Whenever Vim 9 classes and objects were implemented and became mostly bug-free. Tested on 9.1.954, 9.1.866 and 9.1.785.
 
 Using a package manager like [vim-plug](https://github.com/junegunn/vim-plug):
 ```vim
@@ -98,7 +100,7 @@ g:poplar = {
     dirclosedsymb: '▸',
     showgit: true,
     giticons: {
-        staged: '󰸞',
+        staged: '+',
         renamed: '[R]'
     }
 }
@@ -117,7 +119,7 @@ let g:poplar = {
 \     'dirclosedsymb': '▸',
 \     'showgit': 1,
 \     'giticons': {
-\         'staged': '󰸞',
+\         'staged': '+',
 \         'renamed': '[R]'
 \     }
 \ }
@@ -154,3 +156,8 @@ PoplarGitMultiple
 ```
 
 Note that Poplar will not automatically add these highlight groups and prefer fallbacks instead, which helps avoid cluttering the `:highlight` namespace.
+
+## Upcoming features
+
+- [ ] jump between filetree node siblings.
+- [ ] possibly fuzzy file finding, if I get around to it.

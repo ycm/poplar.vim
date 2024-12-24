@@ -128,7 +128,9 @@ export def MaybeParseGitStatus(): dict<string>
     var statdict = {}
     for line in statuses
         var status = ParseGitStatusFlags(line[: 1])
-        var path = line[2 :]->trim()->fnamemodify(':p')
+        var path = status == 'renamed'
+                ? line[2 :]->split(' -> ')[-1]->trim()->fnamemodify(':p')
+                : line[2 :]->trim()->fnamemodify(':p')
         if path->isdirectory()
             path = path->fnamemodify(':h')
         endif

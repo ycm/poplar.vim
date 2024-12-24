@@ -19,8 +19,12 @@ export class TreeWindow extends basewindow.BaseWindow
     enddef
 
 
-    def InitLines()
+    def Refresh()
         this.SetLines(this._tree.GetPrettyFormatLines())
+        if g:poplar.showgit
+            var branch = util.GetGitBranchName()
+            this._id->popup_setoptions({title: branch == null ? $' no branch ' : $' {branch} '})
+        endif
     enddef
 
 
@@ -50,17 +54,17 @@ export class TreeWindow extends basewindow.BaseWindow
         # -------------------- cursorline can be anywhere --------------------
         elseif this._IsKey(key, g:poplar.keys.TREE_TOGGLE_HIDDEN)
             this._tree.ToggleHidden()
-            this.SetLines(this._tree.GetPrettyFormatLines())
+            this.Refresh()
         elseif this._IsKey(key, g:poplar.keys.TREE_RAISE_ROOT)
             this._tree.RaiseRoot()
             this._tree.HardRefresh()
-            this.SetLines(this._tree.GetPrettyFormatLines())
+            this.Refresh()
         elseif this._IsKey(key, g:poplar.keys.TREE_CWD_ROOT)
             this._tree.ResetRootToCwd()
-            this.SetLines(this._tree.GetPrettyFormatLines())
+            this.Refresh()
         elseif this._IsKey(key, g:poplar.keys.TREE_REFRESH)
             this._tree.HardRefresh()
-            this.SetLines(this._tree.GetPrettyFormatLines())
+            this.Refresh()
         elseif this._IsKey(key, g:poplar.keys.TREE_TOGGLE_HELP)
             this._show_help = !this._show_help
             this.SetLines(this._lines, false)
@@ -78,7 +82,7 @@ export class TreeWindow extends basewindow.BaseWindow
             elseif this._IsKey(key, g:poplar.keys.TREE_OPEN)
                 if node.path->isdirectory()
                     this._tree.ToggleDir(node)
-                    this.SetLines(this._tree.GetPrettyFormatLines())
+                    this.Refresh()
                 else
                     execute $'drop {node.path->fnamemodify(':~:.')}'
                     return this._CallbackExit()
@@ -94,7 +98,7 @@ export class TreeWindow extends basewindow.BaseWindow
                 return this._CallbackExit()
             elseif this._IsKey(key, g:poplar.keys.TREE_CHROOT)
                 this._tree.ChangeRoot(node)
-                this.SetLines(this._tree.GetPrettyFormatLines())
+                this.Refresh()
             elseif this._IsKey(key, g:poplar.keys.TREE_TOGGLE_PIN)
                 if node.path->isdirectory()
                     util.LogErr($'cannot pin {node.path}: is a directory.')
@@ -143,7 +147,7 @@ export class TreeWindow extends basewindow.BaseWindow
             util.Log('see g:poplar.output for output.')
         endif
         this._tree.HardRefresh()
-        this.SetLines(this._tree.GetPrettyFormatLines())
+        this.Refresh()
     enddef # }}}
 
 
@@ -162,7 +166,7 @@ export class TreeWindow extends basewindow.BaseWindow
             util.LogErr($"check v:errors -- could not change permissions to {args} for node: {path}.")
         endif
         this._tree.HardRefresh()
-        this.SetLines(this._tree.GetPrettyFormatLines())
+        this.Refresh()
     enddef # }}}
 
 
@@ -194,7 +198,7 @@ export class TreeWindow extends basewindow.BaseWindow
             endif
         endif
         this._tree.HardRefresh()
-        this.SetLines(this._tree.GetPrettyFormatLines())
+        this.Refresh()
     enddef # }}}
 
 
@@ -261,7 +265,7 @@ export class TreeWindow extends basewindow.BaseWindow
             endif
         endif
         this._tree.HardRefresh()
-        this.SetLines(this._tree.GetPrettyFormatLines())
+        this.Refresh()
     enddef # }}}
 
 
@@ -289,7 +293,7 @@ export class TreeWindow extends basewindow.BaseWindow
             endtry
         endif
         this._tree.HardRefresh()
-        this.SetLines(this._tree.GetPrettyFormatLines())
+        this.Refresh()
         this._pin_callbacks.Refresh()
     enddef # }}}
 

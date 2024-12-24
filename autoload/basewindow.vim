@@ -89,9 +89,9 @@ export class BaseWindow
     enddef # }}}
 
 
-    def Open(title: string = ' no title ') # {{{
+    def Open(title: string = 'no title') # {{{
         var opts = this._GetCommonPopupProps()
-        opts.title = title
+        opts.title = $' {title} '
         opts->extend(this.savestate)
         var lines = this._show_help
                 ? this._helptext + this._lines

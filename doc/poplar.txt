@@ -132,7 +132,10 @@ other configs:
    you like that are supported by your font.
  * `filename` is the file that the pin menu will write to. This should always
    relative to the current working directory.
- * `showgit` instructs Poplar whether to parse and show `git status` output.
+ * `showgit` instructs Poplar whether to replace the default `poplar` window
+   title with the name of the current Git branch, if it exists. If `showgit`
+   is `1` or `true`, Poplar will also parse `git status` and show status
+   flags/icons next to files/directories.
  * `giticons` will only be used if `showgit` is `1` or `true`. You don't have
    to define icons for every status. The `multiple` icon is used for
    directories that contain files with different statuses.
@@ -270,10 +273,6 @@ aware of any problem areas. Here are a couple things I can think of:
  * Ambiguous-width glyphs not displaying correctly
    Please check |ambiwidth|, and verify that your terminal emulator supports
    ambiguous width characters.
- * Certain things are not refreshing
-   Poplar avoids refreshing things unless it has to. Use `R` to manually
-   refresh. Any filetree operation (expanding a directory, changing root,
-   etc.) will also refresh Poplar.
  * Can't move, rename, or delete certain files/directories
    Please note Poplar does not support the following in modify mode:
     * Modifying privileged files/directories

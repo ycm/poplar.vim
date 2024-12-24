@@ -164,8 +164,8 @@ export def Run()
         })
     endif
 
-    (<TW.TreeWindow>g:poplar.tree_win).Open(' poplar ')
-    (<PW.PinWindow>g:poplar.pin_win).Open(' pinned ')
+    (<TW.TreeWindow>g:poplar.tree_win).Open('poplar')
+    (<PW.PinWindow>g:poplar.pin_win).Open('pinned')
     (<PW.PinWindow>g:poplar.pin_win).LoadPaths()
     (<PW.PinWindow>g:poplar.pin_win).HardRefresh()
 
@@ -178,9 +178,9 @@ export def Run()
             zindex: g:poplar.dims.Z_WIN_NOFOCUS,
             cursorline: false
         })
-        (<TW.TreeWindow>g:poplar.tree_win).InitLines()
-        (<PW.PinWindow>g:poplar.pin_win).SoftRefresh()
     endif
+    (<TW.TreeWindow>g:poplar.tree_win).Refresh()
+    (<PW.PinWindow>g:poplar.pin_win).SoftRefresh()
 enddef
 
 

@@ -106,8 +106,22 @@ export def ParseGitStatusFlags(xy: string): string
 enddef
 
 
+def IsInsideGitTree(): bool
+    return $"{'git rev-parse --is-inside-work-tree'->system()->trim()}" == 'true'
+enddef
+
+
+export def GetGitBranchName(): string
+    if IsInsideGitTree()
+        var branch = 'git rev-parse --abbrev-ref HEAD'->system()->trim()
+        return branch == '' ? null_string : branch
+    endif
+    return null_string
+enddef
+
+
 export def MaybeParseGitStatus(): dict<string>
-    if !g:poplar.showgit || $"{'git rev-parse --is-inside-work-tree'->system()->trim()}" != 'true'
+    if !g:poplar.showgit || !IsInsideGitTree()
         return {}
     endif
     var statuses = 'git status --porcelain'->system()->split('\n')

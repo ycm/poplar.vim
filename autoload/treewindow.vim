@@ -45,8 +45,9 @@ export class TreeWindow extends basewindow.BaseWindow
                 this._ModifyNode(node, 'move/rename node', node.path,
                                  function(this._CallbackMoveNode, [node.path]))
             elseif this._IsKey(key, g:poplar.keys.TREE_DELETE_NODE)
-                this._ModifyNode(node, $"delete {node.path}? ('yes' to confirm)", '',
-                                 function(this._CallbackDeleteNode, [node.path]))
+                var prompt = $"delete {node.path->fnamemodify(':~:.')}? ('yes' to confirm"
+                        .. (g:poplar.usegitcmds ? ", or 'force' for git rm -f)" : ')')
+                this._ModifyNode(node, prompt, '', function(this._CallbackDeleteNode, [node.path]))
             elseif this._IsKey(key, g:poplar.keys.TREE_CHMOD)
                 this._ModifyNode(node, 'enter chmod arguments', '',
                                  function(this._CallbackChmodNode, [node.path]))
@@ -170,36 +171,56 @@ export class TreeWindow extends basewindow.BaseWindow
     enddef # }}}
 
 
-    def _CallbackDeleteNode(path: string, confirm: string) # {{{
-        if confirm->trim() !=? 'yes'
-            util.Log($'node deletion aborted.')
+    def _CallbackDeleteNode(path: string, inputted: string)
+        var resp = inputted->trim()
+        if resp !=? 'yes' && resp !=? 'force'
             return
         endif
-        if path->isdirectory()
-            if path->delete('d') == 0
-                util.Log($'deleted directory {path}.')
+
+        var try_git_rm = (g:poplar.usegitcmds || resp ==? 'force') && util.CanTryGitRm(path)
+
+        var forceflag = resp ==? 'force' ? '-f' : ''
+        var is_dir = path->isdirectory()
+        var success = -1
+        if try_git_rm
+            var output = $'git rm {forceflag} {path}'->system()->trim()
+            if output =~ '^rm '
+                success = 0
             else
-                util.LogErr($'could not delete directory {path}.')
+                g:poplar.output = output
             endif
+        elseif resp ==? 'force'
+            util.LogErr('cannot use git rm -f here.')
+            return
         else
-            if path->delete() == 0
+            success = is_dir ? path->delete('d') : path->delete()
+        endif
+
+        var short = path->fnamemodify(':~:.') .. (is_dir ? '/' : '')
+
+        if success == 0
+            var msg = try_git_rm ? $'performed git rm on {short}' : $'deleted {short}'
+            if is_dir
+                util.Log($'{msg}.')
+            else
                 var winids = path->bufnr()->win_findbuf()
                 for winid in winids
                     $':noa | q!'->win_execute(winid)
                 endfor
-                if winids == []
-                    util.Log($'deleted file {path}.')
-                else
-                    util.Log($'deleted file {path} and removed {winids->len()} windows.')
-                endif
+                msg = winids->empty() ? $'{msg}.' : $'{msg} and closed {winids->len()} windows.'
+                util.Log(msg)
                 this._pin_callbacks.Refresh()
-            else
-                util.LogErr($'could not delete file: {path}.')
             endif
+        elseif try_git_rm && forceflag != ''
+            util.LogErr($'could not perform git rm -f on {short}. Run :echo g:poplar.output to check output.')
+        elseif try_git_rm
+            util.LogErr($"could not perform git rm - try again with 'force' or run :echo g:poplar.output to check output.")
+        else
+            util.LogErr($'could not delete {short}.')
         endif
         this._tree.HardRefresh()
         this.Refresh()
-    enddef # }}}
+    enddef
 
 
     def _CallbackMoveNode(from: string, to: string) # {{{

@@ -94,7 +94,8 @@ g:poplar.yankreg =       g:poplar->get('yankreg', '+')
 g:poplar.verbosity =     g:poplar->get('verbosity', 'all')
 g:poplar.diropensymb =   g:poplar->get('diropensymb', 'v')
 g:poplar.dirclosedsymb = g:poplar->get('dirclosedsymb', '>')
-g:poplar.filename =      g:poplar->get('filename', '.poplar.txt') # }}}
+g:poplar.filename =      g:poplar->get('filename', '.poplar.txt')
+g:poplar.usegitcmds =    g:poplar->get('usegitcmds', true) # }}}
 
 # TEXT PROPERTIES (can override but not configure) ----------------------- {{{
 g:poplar.textprops = {

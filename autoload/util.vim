@@ -106,6 +106,15 @@ export def ParseGitStatusFlags(xy: string): string
 enddef
 
 
+export def CanTryGitRm(filename: string): bool
+    if !IsInsideGitTree()
+        return false
+    endif
+    var tracked = 'git ls-files'->system()->trim()->split('\n')->map((_, p) => p->fnamemodify(':p'))
+    return tracked->index(filename->fnamemodify(':p')) >= 0
+enddef
+
+
 def IsInsideGitTree(): bool
     return $"{'git rev-parse --is-inside-work-tree'->system()->trim()}" == 'true'
 enddef

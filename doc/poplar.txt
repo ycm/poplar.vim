@@ -108,6 +108,7 @@ defaults for the configs that you can modify:
         dirclosedsymb: '>',
         filename: '.poplar.txt',
 	showgit: true,
+	usegitcmds: true,
 	giticons: {
 	    staged:    '[S]',
 	    modified:  '[M]',
@@ -136,6 +137,13 @@ other configs:
    title with the name of the current Git branch, if it exists. If `showgit`
    is `1` or `true`, Poplar will also parse `git status` and show status
    flags/icons next to files/directories.
+ * `usegitcmds` makes Poplar default to `git mv` and `git rm` when moving and
+   deleting node. Note that when this option is on, Poplar will still fall
+   back to the builtin |rename()| and |delete()| calls when it makes sense
+   (e.g. not in a git repo, or operating on untracked files). Regardless of
+   whether `usegitcmds` is true, Poplar will refuse to overwrite existing
+   files when moving nodes. With respect to `git rm`, Poplar will invoke the
+   `--force` flag if you enter `force` in the inputline prompt.
  * `giticons` will only be used if `showgit` is `1` or `true`. You don't have
    to define icons for every status. The `multiple` icon is used for
    directories that contain files with different statuses.
@@ -147,8 +155,8 @@ You don't have to set all the configs. My `.vimrc` only has the following:
         dirclosedsymb: '▸',
     }
 <
-(This is because I'm using a patched font which includes these icons, but of
-course many people do not use patched fonts.)
+This is because I'm using a patched font which includes these icons, but of
+course many people do not use patched fonts.
 
 ==============================================================================
 COLORS                                                        *poplar-colors*

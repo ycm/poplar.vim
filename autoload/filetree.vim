@@ -164,12 +164,8 @@ export class FileTree
         endif
         if node.children == null_list
             var fmt_path = node.path == '/' ? node.path : $'{node.path}/'
-            var listings = $'{fmt_path}.*'
-                    ->glob(true, true)
-                    ->filter((_, p) => p !~ '.*/\.\+$')
-                    + $'{fmt_path}*'->glob(true, true)
-            var dirs = listings
-                    ->copy()
+            var listings = node.path->readdir()->map((_, p) => fmt_path .. p)
+            var dirs = listings->copy()
                     ->filter((_, p) => p->isdirectory())
                     ->mapnew((_, p) => FileTreeNode.new(p))
             var nondirs = listings

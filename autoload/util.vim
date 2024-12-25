@@ -95,10 +95,10 @@ export def ParseGitStatusFlags(xy: string): string
         return 'untracked'
     elseif xy == '!!'
         return 'ignored'
-    elseif Y == 'M'
-        return 'modified'
     elseif X =~ '[RC]' || Y =~ '[RC]'
         return 'renamed'
+    elseif Y == 'M'
+        return 'modified'
     elseif X =~ '[MA]'
         return 'staged'
     endif

@@ -64,6 +64,12 @@ export class BaseWindow
                 return true
             endif
             return this._id->popup_filter_menu(key)
+        elseif !this._show_modify_mode && this._IsKey(key_norm, g:poplar.keys.GO_TO_TOP)
+            'normal! gg'->win_execute(this._id)
+            return true
+        elseif !this._show_modify_mode && this._IsKey(key_norm, g:poplar.keys.GO_TO_BOTTOM)
+            'normal! G'->win_execute(this._id)
+            return true
         elseif (!this._show_modify_mode && this._IsKey(key_norm, g:poplar.keys.SWITCH_WINDOW_L) && !this._on_left)
             || (!this._show_modify_mode && this._IsKey(key_norm, g:poplar.keys.SWITCH_WINDOW_R) && this._on_left)
             return this._CallbackSwitchFocus()

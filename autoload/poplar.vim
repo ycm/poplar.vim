@@ -24,6 +24,8 @@ g:poplar.modify_text = '(modify-mode)' # }}}
 var default_keys = {
     SWITCH_WINDOW_L:    'h',
     SWITCH_WINDOW_R:    'l',
+    GO_TO_TOP:          'g',
+    GO_TO_BOTTOM:       'G',
     EXIT:               '<esc>',
     PIN_TOGGLE_HELP:    '?',
     PIN_OPEN:           '<cr>',

@@ -184,11 +184,11 @@ export class TreeWindow extends basewindow.BaseWindow
 
         var forceflag = resp ==? 'force' ? '-f' : ''
         var is_dir = path->isdirectory()
-        var success = -1
+        var exitcode = -1
         if try_git_rm
             var output = $'git rm {forceflag} {path}'->system()->trim()
             if output =~ '^rm '
-                success = 0
+                exitcode = 0
             else
                 g:poplar.output = output
             endif
@@ -196,12 +196,12 @@ export class TreeWindow extends basewindow.BaseWindow
             util.LogErr('cannot use git rm -f here.')
             return
         else
-            success = is_dir ? path->delete('d') : path->delete()
+            exitcode = is_dir ? path->delete('d') : path->delete()
         endif
 
         var short = path->fnamemodify(':~:.') .. (is_dir ? '/' : '')
 
-        if success == 0
+        if exitcode == 0
             var msg = try_git_rm ? $'performed git rm on {short}' : $'deleted {short}'
             if is_dir
                 util.Log($'{msg}.')
@@ -233,25 +233,25 @@ export class TreeWindow extends basewindow.BaseWindow
             return
         elseif from->isdirectory() # if SOURCE is a dir, then DEST will be a dir.
             if dest->isdirectory() || dest->filereadable()
-                util.LogErr('aborted, dest exists!')
+                util.LogErr($"aborted, {dest->fnamemodify(':~:.')} exists!")
                 return
             endif
 
             dest = dest[-1] == '/' ? dest : dest .. '/'
 
             var try_git_mv = g:poplar.usegitcmds && util.IsInsideGitTree()
-            var success = -1
+            var exitcode = -1
             if try_git_mv
                 g:poplar.output = $'git mv {from} {dest}'->system()->trim()
-                success = v:shell_error
+                exitcode = v:shell_error
             else
-                success = rename(from, dest)
+                exitcode = rename(from, dest)
             endif
 
             var shortfrom = from->fnamemodify(':~:.')
             var shortdest = dest->fnamemodify(':~:.')
 
-            if success != 0
+            if exitcode != 0
                 util.LogErr($'failed to move directory {shortfrom}.')
             else
                 this._pin_callbacks.UpdateDir(from, dest)
@@ -290,21 +290,21 @@ export class TreeWindow extends basewindow.BaseWindow
             endif
 
             var try_git_mv = g:poplar.usegitcmds && util.IsInsideGitTree()
-            var success = -1
+            var exitcode = -1
             if try_git_mv
                 g:poplar.output = $'git mv {from} {dest}'->system()->trim()
-                success = v:shell_error
+                exitcode = v:shell_error
             endif
 
-            if success != 0
+            if exitcode != 0
                 try_git_mv = false
-                success = rename(from, dest)
+                exitcode = rename(from, dest)
             endif
 
             var shortfrom = from->fnamemodify(':~:.')
             var shortdest = dest->fnamemodify(':~:.')
 
-            if success != 0
+            if exitcode != 0
                 util.LogErr($'failed to move file from {shortfrom} to {shortdest}.')
             else
                 this._pin_callbacks.UpdatePin(from, dest)

@@ -11,6 +11,7 @@ export class BaseWindow
     var _helptext: list<dict<any>>
     var _show_help = false
     var savestate: dict<any> = null_dict
+    var title: string
 
     def _GetCommonPopupProps(): dict<any> # {{{
         var maxheight = [&lines - 8, 0]->max()
@@ -72,17 +73,16 @@ export class BaseWindow
 
 
     def ToggleModifyMode() # {{{
-        var title = this._id->popup_getoptions().title
         if this._show_modify_mode
             this._show_modify_mode = false
             this._id->popup_setoptions({
-                title: title[: -(g:poplar.modify_text->strcharlen()) - 2],
+                title: $' {this.title} ',
                 highlight: 'Pmenu',
             })
         else
             this._show_modify_mode = true
             this._id->popup_setoptions({
-                title: $'{title}{g:poplar.modify_text} ',
+                title: $' {this.title} {g:poplar.modify_text} ',
                 highlight: 'Keyword',
             })
         endif
@@ -91,6 +91,7 @@ export class BaseWindow
 
     def Open(title: string = 'no title') # {{{
         var opts = this._GetCommonPopupProps()
+        this.title = title
         opts.title = $' {title} '
         opts->extend(this.savestate)
         var lines = this._show_help

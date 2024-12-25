@@ -20,11 +20,12 @@ export class TreeWindow extends basewindow.BaseWindow
 
 
     def Refresh()
-        this.SetLines(this._tree.GetPrettyFormatLines())
         if g:poplar.showgit
             var branch = util.GetGitBranchName()
-            this._id->popup_setoptions({title: branch == null ? $' no branch ' : $' {branch} '})
+            this.title = branch == null ? 'no branch' : branch
+            this._id->popup_setoptions({title: $' {this.title} '})
         endif
+        this.SetLines(this._tree.GetPrettyFormatLines())
     enddef
 
 
@@ -173,7 +174,7 @@ export class TreeWindow extends basewindow.BaseWindow
     enddef # }}}
 
 
-    def _CallbackDeleteNode(path: string, inputted: string)
+    def _CallbackDeleteNode(path: string, inputted: string) # {{{
         var resp = inputted->trim()
         if resp !=? 'yes' && resp !=? 'force'
             return
@@ -222,7 +223,7 @@ export class TreeWindow extends basewindow.BaseWindow
         endif
         this._tree.HardRefresh()
         this.Refresh()
-    enddef
+    enddef # }}}
 
 
     def _CallbackMoveNode(from: string, to: string) # {{{
@@ -230,12 +231,28 @@ export class TreeWindow extends basewindow.BaseWindow
         if dest == ''
             util.Log('operation aborted.')
             return
-        elseif from->isdirectory()
-            if dest[-1] != '/'
-                dest = dest .. '/'
+        elseif from->isdirectory() # if SOURCE is a dir, then DEST will be a dir.
+            if dest->isdirectory() || dest->filereadable()
+                util.LogErr('aborted, dest exists!')
+                return
             endif
-            if rename(from, dest) == -1
-                util.LogErr($'failed to move directory {from}.')
+
+            dest = dest[-1] == '/' ? dest : dest .. '/'
+
+            var try_git_mv = g:poplar.usegitcmds && util.IsInsideGitTree()
+            var success = -1
+            if try_git_mv
+                g:poplar.output = $'git mv {from} {dest}'->system()->trim()
+                success = v:shell_error
+            else
+                success = rename(from, dest)
+            endif
+
+            var shortfrom = from->fnamemodify(':~:.')
+            var shortdest = dest->fnamemodify(':~:.')
+
+            if success != 0
+                util.LogErr($'failed to move directory {shortfrom}.')
             else
                 this._pin_callbacks.UpdateDir(from, dest)
                 this._tree.CheckRenamedDirExpand(from, dest)
@@ -249,16 +266,16 @@ export class TreeWindow extends basewindow.BaseWindow
                         ++wins_replaced
                     endfor
                 endfor
-                if wins_replaced == 0
-                    util.Log($'renamed directory to {dest}.')
-                else
-                    util.Log($'renamed directory to {dest} and switched buffers in {wins_replaced} windows.')
-                endif
+
+                var msg = try_git_mv ? 'performed git mv' : 'renamed directory'
+                msg = $'{msg} from {shortfrom} to {shortdest}'
+                    .. (wins_replaced == 0 ? '.' : $' and switch {wins_replaced} windows.')
+                util.Log(msg)
             endif
-        elseif dest->filereadable()
-            util.LogErr($'file already exists: {dest}.')
+        elseif dest->filereadable() # SOURCE is a file, then TARGET must not exist.
+            util.LogErr($"destination already exists: {dest->fnamemodify(':~:.')}.")
             return
-        else
+        else # SOURCE is a file, and TARGET is not a file
             if dest[-1] == '/'
                 try
                     mkdir(dest, 'p')
@@ -271,8 +288,24 @@ export class TreeWindow extends basewindow.BaseWindow
                 catch /E739/
                 endtry
             endif
-            if rename(from, dest) == -1
-                util.LogErr($'failed to move file from {from} to {dest}.')
+
+            var try_git_mv = g:poplar.usegitcmds && util.IsInsideGitTree()
+            var success = -1
+            if try_git_mv
+                g:poplar.output = $'git mv {from} {dest}'->system()->trim()
+                success = v:shell_error
+            endif
+
+            if success != 0
+                try_git_mv = false
+                success = rename(from, dest)
+            endif
+
+            var shortfrom = from->fnamemodify(':~:.')
+            var shortdest = dest->fnamemodify(':~:.')
+
+            if success != 0
+                util.LogErr($'failed to move file from {shortfrom} to {shortdest}.')
             else
                 this._pin_callbacks.UpdatePin(from, dest)
                 var winids = from->bufnr()->win_findbuf()
@@ -280,11 +313,11 @@ export class TreeWindow extends basewindow.BaseWindow
                 for winid in winids
                     $':noa | edit! {dest}'->win_execute(winid)
                 endfor
-                if winids == []
-                    util.Log($'moved file to {dest}.')
-                else
-                    util.Log($'moved file to {dest} and switched buffer(s) in {winids->len()} windows.')
-                endif
+                var msg = try_git_mv
+                        ? $'performed git mv {shortfrom} {shortdest}'
+                        : $'renamed {shortfrom} to {shortdest}'
+                msg = msg .. (winids->empty() ? '.' : $' and switch {winids->len()} windows.')
+                util.Log(msg)
             endif
         endif
         this._tree.HardRefresh()

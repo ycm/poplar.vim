@@ -115,7 +115,7 @@ export def CanTryGitRm(filename: string): bool
 enddef
 
 
-def IsInsideGitTree(): bool
+export def IsInsideGitTree(): bool
     return $"{'git rev-parse --is-inside-work-tree'->system()->trim()}" == 'true'
 enddef
 

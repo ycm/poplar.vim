@@ -48,7 +48,9 @@ By default, `?` will show current key bindings:
 
 ## Setup
 
-Requires Vim 9 point something, probably 9.1+. Whenever Vim 9 classes and objects were implemented and became mostly bug-free. Tested on 9.1.954, 9.1.866 and 9.1.785.
+Requires **Vim 9.1+**.
+
+My testing goes back to 9.1.346. Vim builds on Homebrew (macOS), MSYS2 (Windows), and package managers on most major Linux distros are 9.1.7xx or higher as of writing, so if your Vim is up-to-date then Poplar should work fine. Slightly earlier patches *may* work. Vim 9.0 will definitely *not* work, since there were simply too many class/object features that weren't implemented back then.
 
 Using a package manager like [vim-plug](https://github.com/junegunn/vim-plug):
 ```vim

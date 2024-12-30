@@ -33,11 +33,11 @@ ways to switch between files.
 
 Moreover, sans configuration, the NERDTree buffer can sometimes be disruptive
 to an otherwise optimized setup:
- * using a split window for the filetree will affect current splits
- * an active filetree overrides the tabline title, unnecessarily depriving you
-   of a possibly source of information
- * individual NERDTree buffers do not sync -- you must remember to refresh
- * NERDTree buffers interact very poorly with sessions
+ * Using a split window for the filetree will affect current splits.
+ * An active filetree overrides the tabline title, unnecessarily depriving you
+   of a source of information.
+ * Individual NERDTree buffers do not sync; you must remember to refresh them.
+ * NERDTree buffers interact very poorly with sessions.
 
 On the other hand, while a menu for pinned items (like harpoon) is a good
 candidate for a popup window, there is some degree of wasted space. As such,
@@ -49,11 +49,12 @@ other.
 For my personal use case, Poplar solves the biggest headache I have with
 pinned file menus, which is that renaming a file or directory will break
 existing pins. Since Poplar manages both pinned files and the filetree, it is
-now trivial to avoid this problem.
+now trivial to solve this problem.
 
 Please note that Poplar might not work on Windows. I don't know how Windows
 files and paths work, and I don't have have a need to figure that out
-currently.
+currently. Although, if your Windows command-line is Git Bash or WSL, which
+makes filepaths *nix-like, you should be fine.
 
 ==============================================================================
 USAGE                                                          *poplar-usage*
@@ -132,11 +133,11 @@ other configs:
  * `diropensymb` and `dirclosedsymb` are pretty obvious. Use whatever symbols
    you like that are supported by your font.
  * `filename` is the file that the pin menu will write to. This should always
-   relative to the current working directory.
+   be relative to the current working directory.
  * `showgit` instructs Poplar whether to replace the default `poplar` window
-   title with the name of the current Git branch, if it exists. If `showgit`
-   is `1` or `true`, Poplar will also parse `git status` and show status
-   flags/icons next to files/directories.
+   title with the name of the current Git branch. If `showgit` is `1` or
+   `true`, Poplar will also parse `git status` and show status flags/icons
+   next to files/directories.
  * `usegitcmds` makes Poplar default to `git mv` and `git rm` when moving and
    deleting node. Note that when this option is on, Poplar will still fall
    back to the builtin |rename()| and |delete()| calls when it makes sense
@@ -155,7 +156,7 @@ You don't have to set all the configs. My `.vimrc` only has the following:
         dirclosedsymb: '▸',
     }
 <
-This is because I'm using a patched font which includes these icons, but of
+This is because I'm using a patched font which includes these glyphs, but of
 course many people do not use patched fonts.
 
 ==============================================================================
@@ -186,7 +187,7 @@ namespace.
  * `GitUnknown`        (defaults to `Identifier`)
  * `GitMultiple`       (defaults to `Identifier`)
 
-My `.vimrc` only uses the following:
+My `.vimrc` uses the following:
 >
     highlight! link PoplarMenu Normal
     highlight! link PoplarMenuSel CursorLine
@@ -254,7 +255,7 @@ single-character keys (`j`, `I`, `?`, etc.), the Poplar's internal comparison
 is case-sensitive. Otherwise, the capitalization doesn't matter.
 
 An apparent quirk with |keytrans()| is that the space character, together with
-`<` are represented as `<Space>` and `<lt>`. The other printable ASCII
+`<`, are represented as `<Space>` and `<lt>`. The other printable ASCII
 characters seem to be the characters themselves, though I haven't looked into
 it very much.
 
@@ -276,10 +277,8 @@ I haven't tested Poplar on anything besides my personal machine, so I'm not
 aware of any problem areas. Here are a couple things I can think of:
 
  * General runtime issues
-   Classes in Vim 9 have a lot of bugs that are continuously being fixed.
-   Poplar should work on Vim 9.1.785 and later. I haven't gotten a chance to
-   test earlier versions. When in doubt, try to update Vim to at least version
-   9.1.850.
+   Classes and objects in Vim 9 have a lot of bugs that are constantly being
+   fixed. Poplar should work on Vim 9.1.346 and later.
  * Ambiguous-width glyphs not displaying correctly
    Please check |ambiwidth|, and verify that your terminal emulator supports
    ambiguous width characters.

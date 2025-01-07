@@ -82,22 +82,26 @@ export class TreeWindow extends basewindow.BaseWindow
             if this._IsKey(key, g:poplar.keys.TREE_MODIFY_MODE)
                 this.ToggleModifyMode()
             elseif this._IsKey(key, g:poplar.keys.TREE_OPEN)
-                if node.path->isdirectory()
+                    || this._IsKey(key, g:poplar.keys.TREE_OPEN_SPLIT)
+                    || this._IsKey(key, g:poplar.keys.TREE_OPEN_VSPLIT)
+                    || this._IsKey(key, g:poplar.keys.TREE_OPEN_TAB)
+                if node.path->filereadable()
+                    if this._IsKey(key, g:poplar.keys.TREE_OPEN)
+                        execute $'drop {node.path->fnamemodify(':~:.')}'
+                    elseif this._IsKey(key, g:poplar.keys.TREE_OPEN_SPLIT)
+                        execute $'split {node.path->fnamemodify(':~:.')}'
+                    elseif this._IsKey(key, g:poplar.keys.TREE_OPEN_VSPLIT)
+                        execute $'vsplit {node.path->fnamemodify(':~:.')}'
+                    elseif this._IsKey(key, g:poplar.keys.TREE_OPEN_TAB)
+                        execute $'tab drop {node.path->fnamemodify(':~:.')}'
+                    endif
+                    return this._CallbackExit()
+                elseif node.path->isdirectory() && this._IsKey(key, g:poplar.keys.TREE_OPEN)
                     this._tree.ToggleDir(node)
                     this.Refresh()
                 else
-                    execute $'drop {node.path->fnamemodify(':~:.')}'
-                    return this._CallbackExit()
+                    util.LogErr($"not a readable file: {node.path->fnamemodify(':~:.')}")
                 endif
-            elseif this._IsKey(key, g:poplar.keys.TREE_OPEN_SPLIT) && !node.path->isdirectory()
-                execute $'split {node.path->fnamemodify(':~:.')}'
-                return this._CallbackExit()
-            elseif this._IsKey(key, g:poplar.keys.TREE_OPEN_VSPLIT) && !node.path->isdirectory()
-                execute $'vsplit {node.path->fnamemodify(':~:.')}'
-                return this._CallbackExit()
-            elseif this._IsKey(key, g:poplar.keys.TREE_OPEN_TAB) && !node.path->isdirectory()
-                execute $'tab drop {node.path->fnamemodify(':~:.')}'
-                return this._CallbackExit()
             elseif this._IsKey(key, g:poplar.keys.TREE_CHROOT)
                 this._tree.ChangeRoot(node)
                 this.Refresh()

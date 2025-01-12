@@ -126,7 +126,7 @@ enddef
 
 export def GetGitBranchName(): string
     if IsInsideGitTree()
-        var branch = 'git rev-parse --abbrev-ref HEAD'->system()->trim()
+        var branch = 'git symbolic-ref --short HEAD'->system()->trim()
         return branch == '' || branch->split('\n')->len() != 1 ? null_string : branch
     endif
     return null_string

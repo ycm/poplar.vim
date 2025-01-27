@@ -4,6 +4,11 @@ endif
 
 vim9script noclear
 
+if has('patch-9.1.1014') && !has('patch-9.1.1044')
+    # apparently a nested import bug
+    finish
+endif
+
 if g:->get('loaded_poplar', false)
     finish
 endif

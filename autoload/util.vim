@@ -34,6 +34,7 @@ def FormatHelp(annot: string, key: string = ''): dict<any>
     }
 enddef
 
+
 export def GetTreeWindowHelp(): list<dict<any>>
     return [
         FormatHelp('toggle help',            g:poplar.keys.TREE_TOGGLE_HELP),

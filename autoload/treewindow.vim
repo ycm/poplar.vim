@@ -331,6 +331,7 @@ export class TreeWindow extends basewindow.BaseWindow
 
     def _CallbackAddNode(path: string) # {{{
         var trimmed = path->trim()->simplify()
+
         if trimmed == ''
             util.Log('node creation aborted.')
             return
@@ -339,13 +340,14 @@ export class TreeWindow extends basewindow.BaseWindow
             return
         elseif trimmed[-1] == '/'
             try
-                mkdir(trimmed, 'p')
+                trimmed->mkdir('p')
                 util.Log($'created directory: {trimmed}.')
             catch /E739/
                 util.LogErr($'failed to create directory: {trimmed} (E739).')
             endtry
         else
             try
+                trimmed->fnamemodify(':h')->mkdir('p')
                 []->writefile(trimmed, 'a')
                 util.Log($'created file: {trimmed}')
             catch # privileged directory, etc.

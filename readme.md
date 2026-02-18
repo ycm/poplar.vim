@@ -21,6 +21,10 @@ Popup windows have come a long way since being added in 8.2; this plugin also de
 
 The goal of Poplar is to provide a good-looking, minimally intrusive drop-in replacement to NERDTree that interacts well with git repos, offers a great deal of customization, but requires very little configuration to get started.
 
+## Changelog
+
+- 2017.02.17: Press `O` (by default) to `:Open` a file or directory with your system handler! (e.g. `open`, `xdg-open`, `start`). Bug fix: you can now move/rename untracked directories inside a git tree.
+
 ## Features
 
 ```vim

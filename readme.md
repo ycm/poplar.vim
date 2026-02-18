@@ -81,7 +81,7 @@ If East Asian characters are displaying incorrectly, check `&ambiwidth`.
 
 Sample mapping:
 ```vim
-nnoremap <silent> <leader>p :Poplar<cr>
+nnoremap <silent> <leader>p <cmd>Poplar<cr>
 ```
 
 Recommended:

@@ -205,6 +205,7 @@ export class PinWindow extends basewindow.BaseWindow
             || (this._IsKey(key, g:poplar.keys.PIN_OPEN_SPLIT) && this._TryOpenFile(idx, 'split'))
             || (this._IsKey(key, g:poplar.keys.PIN_OPEN_VSPLIT) && this._TryOpenFile(idx, 'vsplit'))
             || (this._IsKey(key, g:poplar.keys.PIN_OPEN_TAB) && this._TryOpenFile(idx, 'tab drop'))
+            || (this._IsKey(key, g:poplar.keys.PIN_OPEN_SYS) && this._TryOpenFile(idx, 'Open'))
                 return this._CallbackExit()
             elseif this._IsKey(key, g:poplar.keys.PIN_YANK_PATH)
                 var info = this._GetPathIdxFromIdx(idx)
@@ -355,27 +356,5 @@ export class PinWindow extends basewindow.BaseWindow
         this.SoftRefresh()
     enddef # }}}
 
-
-    def _InitHelpText() # {{{
-        this._helptext = [
-            util.FormatHelp('toggle help',         g:poplar.keys.PIN_TOGGLE_HELP),
-            util.FormatHelp('switch to tree menu', g:poplar.keys.SWITCH_WINDOW_L),
-            util.FormatHelp('exit poplar',         g:poplar.keys.EXIT),
-            util.FormatHelp('open',                g:poplar.keys.PIN_OPEN),
-            util.FormatHelp('open in split',       g:poplar.keys.PIN_OPEN_SPLIT),
-            util.FormatHelp('open in vsplit',      g:poplar.keys.PIN_OPEN_VSPLIT),
-            util.FormatHelp('open in tab',         g:poplar.keys.PIN_OPEN_TAB),
-            util.FormatHelp('refresh',             g:poplar.keys.PIN_REFRESH),
-            util.FormatHelp('move item down',      g:poplar.keys.PIN_MOVE_DOWN),
-            util.FormatHelp('move item up',        g:poplar.keys.PIN_MOVE_UP),
-            util.FormatHelp('yank full path',      g:poplar.keys.PIN_YANK_PATH),
-            util.FormatHelp('enter modify mode',   g:poplar.keys.PIN_MODIFY_MODE),
-            util.FormatHelp('---- MODIFY MODE ----'),
-            util.FormatHelp('add pin',             g:poplar.keys.PIN_ADD),
-            util.FormatHelp('modify pin',          g:poplar.keys.PIN_MODIFY),
-            util.FormatHelp('delete pin',          g:poplar.keys.PIN_DELETE),
-            {}
-        ]
-    enddef # }}}
 
 endclass

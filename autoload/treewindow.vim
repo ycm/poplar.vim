@@ -102,6 +102,8 @@ export class TreeWindow extends basewindow.BaseWindow
                 elseif node.path->isdirectory() && this._IsKey(key, g:poplar.keys.TREE_OPEN)
                     this._tree.ToggleDir(node)
                     this.Refresh()
+                elseif node.path->isdirectory() && this._IsKey(key, g:poplar.keys.TREE_OPEN_SYS)
+                    execute $'Open {node.path->fnamemodify(':~:.')}'
                 else
                     util.LogErr($"not a readable file: {node.path->fnamemodify(':~:.')}")
                 endif

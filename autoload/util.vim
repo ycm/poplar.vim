@@ -125,6 +125,12 @@ export def IsInsideGitTree(): bool
 enddef
 
 
+export def FileIsTracked(filename: string): bool
+    # assumes IsInsideGitTree
+    return $"{('git ls-files ' .. filename)->system()->trim()}" != ''
+enddef
+
+
 export def GetGitBranchName(): string
     if IsInsideGitTree()
         var branch = 'git symbolic-ref --short HEAD'->system()->trim()

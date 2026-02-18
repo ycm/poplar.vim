@@ -243,7 +243,7 @@ export class TreeWindow extends basewindow.BaseWindow
 
             dest = dest[-1] == '/' ? dest : dest .. '/'
 
-            var try_git_mv = g:poplar.usegitcmds && util.IsInsideGitTree()
+            var try_git_mv = g:poplar.usegitcmds && util.IsInsideGitTree() && util.FileIsTracked(from)
             var exitcode = -1
             if try_git_mv
                 g:poplar.output = $'git mv {from} {dest}'->system()->trim()

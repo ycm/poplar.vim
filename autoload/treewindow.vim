@@ -85,6 +85,7 @@ export class TreeWindow extends basewindow.BaseWindow
                     || this._IsKey(key, g:poplar.keys.TREE_OPEN_SPLIT)
                     || this._IsKey(key, g:poplar.keys.TREE_OPEN_VSPLIT)
                     || this._IsKey(key, g:poplar.keys.TREE_OPEN_TAB)
+                    || this._IsKey(key, g:poplar.keys.TREE_OPEN_SYS)
                 if node.path->filereadable()
                     if this._IsKey(key, g:poplar.keys.TREE_OPEN)
                         execute $'drop {node.path->fnamemodify(':~:.')}'
@@ -94,11 +95,15 @@ export class TreeWindow extends basewindow.BaseWindow
                         execute $'vsplit {node.path->fnamemodify(':~:.')}'
                     elseif this._IsKey(key, g:poplar.keys.TREE_OPEN_TAB)
                         execute $'tab drop {node.path->fnamemodify(':~:.')}'
+                    elseif this._IsKey(key, g:poplar.keys.TREE_OPEN_SYS)
+                        execute $'Open {node.path->fnamemodify(':~:.')}'
                     endif
                     return this._CallbackExit()
                 elseif node.path->isdirectory() && this._IsKey(key, g:poplar.keys.TREE_OPEN)
                     this._tree.ToggleDir(node)
                     this.Refresh()
+                elseif node.path->isdirectory() && this._IsKey(key, g:poplar.keys.TREE_OPEN_SYS)
+                    execute $'Open {node.path->fnamemodify(':~:.')}'
                 else
                     util.LogErr($"not a readable file: {node.path->fnamemodify(':~:.')}")
                 endif

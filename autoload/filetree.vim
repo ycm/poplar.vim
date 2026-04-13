@@ -163,7 +163,15 @@ export class FileTree
             this._expanded_paths[node.path] = null_string
         endif
         if node.children == null_list
-            var fmt_path = node.path == '/' ? node.path : $'{node.path}/'
+            var fmt_path: string = ''
+            # make compatiable with Windows-style paths
+            if has('win32') || has('win64')
+                var slash = &shellslash ? '/' : '\'
+                fmt_path = node.path =~ '^[A-Z]:\\$' ? node.path : node.path .. slash
+            else
+                fmt_path = node.path == '/' ? node.path : $'{node.path}/'
+            endif
+
             var listings = node.path->readdir()->map((_, p) => fmt_path .. p)
             var dirs = listings->copy()
                     ->filter((_, p) => p->isdirectory())

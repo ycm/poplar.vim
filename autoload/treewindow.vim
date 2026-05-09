@@ -87,14 +87,16 @@ export class TreeWindow extends basewindow.BaseWindow
                     || this._IsKey(key, g:poplar.keys.TREE_OPEN_TAB)
                     || this._IsKey(key, g:poplar.keys.TREE_OPEN_SYS)
                 if node.path->filereadable()
-                    if this._IsKey(key, g:poplar.keys.TREE_OPEN)
+                    if this._IsKey(key, g:poplar.keys.TREE_OPEN_TAB)
+                        this._CallbackExit()
+                        execute $'tab drop {node.path->fnamemodify(':~:.')}'
+                        return true
+                    elseif this._IsKey(key, g:poplar.keys.TREE_OPEN)
                         execute $'drop {node.path->fnamemodify(':~:.')}'
                     elseif this._IsKey(key, g:poplar.keys.TREE_OPEN_SPLIT)
                         execute $'split {node.path->fnamemodify(':~:.')}'
                     elseif this._IsKey(key, g:poplar.keys.TREE_OPEN_VSPLIT)
                         execute $'vsplit {node.path->fnamemodify(':~:.')}'
-                    elseif this._IsKey(key, g:poplar.keys.TREE_OPEN_TAB)
-                        execute $'tab drop {node.path->fnamemodify(':~:.')}'
                     elseif this._IsKey(key, g:poplar.keys.TREE_OPEN_SYS)
                         execute $'Open {node.path->fnamemodify(':~:.')}'
                     endif
